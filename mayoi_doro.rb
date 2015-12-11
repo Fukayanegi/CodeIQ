@@ -13,11 +13,11 @@
 def solve lor
   # check input
   if lor < 0 then
-    puts "Warning : N must be over 0"
+#    puts "Warning : N must be over 0"
     return { b: 0, c: 0, x: 0 }
   else
     if lor % 1 != 0
-      puts "Warning : N should be Integer. Truncate #{lor} to #{lor.floor}"
+#      puts "Warning : N should be Integer. Truncate #{lor} to #{lor.floor}"
     end
 
     lor = lor.to_i
@@ -35,7 +35,7 @@ def solve lor
   end
 end
 
-n = ARGV[0]
+n = STDIN.gets
 if n.nil?
 #  puts "Warning N must not be nil"
   exit 0
