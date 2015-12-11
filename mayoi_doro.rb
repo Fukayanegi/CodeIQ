@@ -55,3 +55,5 @@ answer = answer_tmp.values.inject(:+)
 #puts "OUTPUT : P = " + answer.to_s
 
 puts answer
+
+# 挑戦完了
