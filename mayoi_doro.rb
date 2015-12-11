@@ -37,21 +37,21 @@ end
 
 n = ARGV[0]
 if n.nil?
-  puts "Warning N must not be nil"
+#  puts "Warning N must not be nil"
   exit 0
 end
 
-puts "INPUT : N = " + n
+#puts "INPUT : N = " + n
 begin
   lmt_of_rtn = Float(n)
 rescue
-  puts "Warning : N is not a number"
+#  puts "Warning : N is not a number"
   lmt_of_rtn = 0
 end
 
 answer_tmp = solve lmt_of_rtn
 answer = answer_tmp.values.inject(:+)
 
-puts "OUTPUT : P = " + answer.to_s
+#puts "OUTPUT : P = " + answer.to_s
 
-answer
+puts answer
