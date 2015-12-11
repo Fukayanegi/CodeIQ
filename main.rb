@@ -11,7 +11,6 @@
 # [1-B]、[1-C]を計算するために[2-B][2-C]が必要となる
 
 def solve lor
-  return { b: 0, c: 0, x: 0 } if lor <= 0
   return { b: 1, c: 1, x: 0 } if lor <= 2
 
   if lor > 2 then
@@ -23,19 +22,22 @@ def solve lor
   end
 end
 
+puts "INPUT : N = " + ARGV[0]
 limit_of_return = ARGV[0].to_f
 
-puts "INPUT : N = " + limit_of_return.to_s
 answer_tmp = { b: 0, c: 0, x: 0 }
 
 if limit_of_return < 0 then
   puts "Warning : N must be over 0"
-elsif limit_of_return < 1 then
-  # do nothingß
 else
   msg = "Warning : N should be Integer. Truncate #{limit_of_return} to #{limit_of_return.floor}"
   puts msg if limit_of_return % 1 != 0
-  answer_tmp = solve limit_of_return.to_i
+
+  if limit_of_return < 1 then
+    # do nothing
+  else
+    answer_tmp = solve limit_of_return.to_i
+  end
 end
 
 answer = answer_tmp.values.inject(:+)
