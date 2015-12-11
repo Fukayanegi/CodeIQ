@@ -23,20 +23,20 @@ def solve lor
 end
 
 puts "INPUT : N = " + ARGV[0]
-limit_of_return = ARGV[0].to_f
+lmt_of_rtn = ARGV[0].to_f
 
 answer_tmp = { b: 0, c: 0, x: 0 }
 
-if limit_of_return < 0 then
+if lmt_of_rtn < 0 then
   puts "Warning : N must be over 0"
 else
-  msg = "Warning : N should be Integer. Truncate #{limit_of_return} to #{limit_of_return.floor}"
-  puts msg if limit_of_return % 1 != 0
+  msg = "Warning : N should be Integer. Truncate #{lmt_of_rtn} to #{lmt_of_rtn.floor}"
+  puts msg if lmt_of_rtn % 1 != 0
 
-  if limit_of_return < 1 then
+  if lmt_of_rtn < 1 then
     # do nothing
   else
-    answer_tmp = solve limit_of_return.to_i
+    answer_tmp = solve lmt_of_rtn.to_i
   end
 end
 
