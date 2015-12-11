@@ -36,6 +36,11 @@ def solve lor
 end
 
 n = ARGV[0]
+if n.nil?
+  puts "Warning N must not be nil"
+  exit 0
+end
+
 puts "INPUT : N = " + n
 begin
   lmt_of_rtn = Float(n)
