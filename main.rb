@@ -10,25 +10,34 @@
 # N回反転できる場合、[N-2のP]+[1-B]+[1-C]となる
 # [1-B]、[1-C]を計算するために[2-B][2-C]が必要となる
 
-def solve lor, status
-  n = lor.to_i
-  return { b: 0, c: 0, x: 0 } if n <= 0
-  return { b: 1, c: 1, x: 0 } if n <= 2
+def solve lor
+  return { b: 0, c: 0, x: 0 } if lor <= 0
+  return { b: 1, c: 1, x: 0 } if lor <= 2
 
-  if n > 2 then
-    n = n - 1 if n.even?
-    answer_tmp = solve n - 2, status
+  if lor > 2 then
+    lor = lor - 1 if lor.even?
+    answer_tmp = solve lor - 2
     new_b = answer_tmp[:b] * 1 + answer_tmp[:c] * 1 
     new_c = answer_tmp[:b] * 1 + answer_tmp[:c] * 2
     return { b: new_b, c: new_c, x: answer_tmp[:b] + answer_tmp[:c] + answer_tmp[:x] }
   end
 end
 
-limit_of_return = ARGV[0]
-initial = { b:0, c:0 }
-puts "INPUT : N = " + limit_of_return
+limit_of_return = ARGV[0].to_f
 
-answer_tmp = solve limit_of_return, initial
+puts "INPUT : N = " + limit_of_return.to_s
+answer_tmp = { b: 0, c: 0, x: 0 }
+
+if limit_of_return < 0 then
+  puts "Warning : N must be over 0"
+elsif limit_of_return < 1 then
+  # do nothingß
+else
+  msg = "Warning : N should be Integer. Truncate #{limit_of_return} to #{limit_of_return.floor}"
+  puts msg if limit_of_return % 1 != 0
+  answer_tmp = solve limit_of_return.to_i
+end
+
 answer = answer_tmp.values.inject(:+)
 
 puts "OUTPUT : P = " + answer.to_s
