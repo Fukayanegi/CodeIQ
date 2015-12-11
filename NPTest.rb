@@ -4,5 +4,13 @@ end
 
 require 'minitest/autorun'
 
-class NPTest < Minitest::Test
+class TestMayoiDoro < MiniTest::Unit::TestCase
+  def setup
+  end
+
+  def tear_down
+  end
+
+  def test_0
+  end
 end
