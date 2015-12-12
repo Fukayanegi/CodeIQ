@@ -1,4 +1,9 @@
-def solve
+A = [1]
+B = [[1, 1], [1, 1]]
+C = [[1, 1, 1, 1], [1, 1, 1, 1]]
+D = [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]
+
+def solve width, height
   [{A:0, B:0, C:0, D:0}]
 end
 
@@ -17,7 +22,7 @@ rescue
   width, height = 0, 0
 end
 
-answer_tmp = solve
+answer_tmp = solve width, height
 answer = answer_tmp.count
 
 puts "OUTPUT : Patterns = " + answer.to_s
