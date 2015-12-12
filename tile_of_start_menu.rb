@@ -4,7 +4,21 @@ C = [[1, 1, 1, 1], [1, 1, 1, 1]]
 D = [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]
 
 def solve width, height
-  [{A:0, B:0, C:0, D:0}]
+  patterns = solve_patterns width * height, [{A:0, B:0, C:0, D:0}], [:D, :C, :B, :A]
+  patterns
+end
+
+def solve_patterns size, use, choice
+  first_choice = choice[0]
+  tile = eval(first_choice.to_s)
+  t_size = tile.inject(0) {|sum, array| sum += array.inject(:+)}
+
+  if size >= t_size
+    use[use.size-1][first_choice] += 1
+    solve_patterns size - t_size, use, choice
+  end
+  
+  use
 end
 
 size = STDIN.gets
@@ -25,6 +39,7 @@ end
 answer_tmp = solve width, height
 answer = answer_tmp.count
 
+p answer_tmp
 puts "OUTPUT : Patterns = " + answer.to_s
 
 puts answer
