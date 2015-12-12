@@ -4,11 +4,11 @@ C = [[1, 1, 1, 1], [1, 1, 1, 1]]
 D = [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]
 
 def solve width, height
-  patterns = solve_patterns width * height, [{A:0, B:0, C:0, D:0}], [:D, :C, :B, :A]
-  patterns.uniq
+  usage = solve_tile_usage width * height, [{A:0, B:0, C:0, D:0}], [:D, :C, :B, :A]
+  usage.uniq
 end
 
-def solve_patterns size, use, choice
+def solve_tile_usage size, use, choice
   first_choice = choice[0]
   use_dup = use[use.size-1].dup
   tile = eval(first_choice.to_s)
@@ -17,13 +17,13 @@ def solve_patterns size, use, choice
 
   if size >= t_size
     use[use.size-1][first_choice] += 1
-    solve_patterns size - t_size, use, choice.dup
+    solve_tile_usage size - t_size, use, choice.dup
   end
 
   choice.shift
   if choice.length > 0 then
     use << use_dup
-    solve_patterns size, use, choice
+    solve_tile_usage size, use, choice
   end
   
   use
