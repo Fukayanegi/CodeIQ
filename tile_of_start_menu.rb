@@ -4,8 +4,9 @@ C = [[1, 1, 1, 1], [1, 1, 1, 1]]
 D = [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]
 
 def solve width, height
-  usage = solve_tile_usage width * height, [[]], [:D, :C, :B, :A]
-  usage.uniq
+  usages = solve_tile_usage width * height, [[]], [:D, :C, :B, :A]
+  patterns = solve_tile_pattern Array.new(height) {Array.new(width, 0)}, usages.uniq
+  patterns.uniq
 end
 
 def solve_tile_usage size, usages, choice
@@ -30,27 +31,40 @@ def solve_tile_usage size, usages, choice
   usages
 end
 
-def solve_tile_pattern pattern_map, usage, solution
-  usage.each do |tile|
-    tile_matrix = eval(tile.shift)
-    pattern_map.each_with_index do |row, i|
-      row.each_with_index do |column, j|
-        if put? pattern_map, i, j, tile_matrix then
-          tile_matrix.each_with_index do |row, k|
-            row.each_with_index do |col, l|
-              pattern_map[i+k][j+l] = tile
-            end
-          end
+def solve_tile_pattern pattern_map, usages
+  solution = []
+  usages.each do |tiles|
+    solution << (solve_tile_pattern_by_usage pattern_map, tiles, [])
+  end
+  return solution
+end
 
-          return pattern_map if usage.nil?
-          ret = solve_tile_pattern pattern_map, usage.dup
-          solution << ret unless ret.nil?
-        else
-          nil
+def solve_tile_pattern_by_usage pattern_map, tiles, solution
+  tile = tiles.shift
+  tile_matrix = eval(tile.to_s)
+
+  pattern_map.each_with_index do |row, i|
+    row.each_with_index do |column, j|
+      if put? pattern_map, i, j, tile_matrix then
+        tile_matrix.each_with_index do |row, k|
+          row.each_with_index do |col, l|
+            pattern_map[i+k][j+l] = tile
+          end
         end
+
+        if tiles.length == 0 then
+          solution << pattern_map
+        else
+          ret = solve_tile_pattern_by_usage pattern_map.dup, tiles.dup, solution
+          solution << ret unless ret.nil?
+        end
+      else
+        nil
       end
     end
   end
+
+  return solution
 end
 
 def put? pattern_map, x, y, tile
