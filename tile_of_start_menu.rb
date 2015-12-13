@@ -4,29 +4,30 @@ C = [[1, 1, 1, 1], [1, 1, 1, 1]]
 D = [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]
 
 def solve width, height
-  usage = solve_tile_usage width * height, [{A:0, B:0, C:0, D:0}], [:D, :C, :B, :A]
+  usage = solve_tile_usage width * height, [[]], [:D, :C, :B, :A]
   usage.uniq
 end
 
-def solve_tile_usage size, use, choice
+def solve_tile_usage size, usages, choice
   first_choice = choice[0]
-  use_dup = use[use.size-1].dup
+  usage = usages[usages.size-1]
+  usage_dup = usage.dup
   tile = eval(first_choice.to_s)
   t_size = tile.inject(0) {|sum, array| sum += array.inject(:+)}
 #  puts "#{size}, #{t_size}, #{tile}"
 
   if size >= t_size
-    use[use.size-1][first_choice] += 1
-    solve_tile_usage size - t_size, use, choice.dup
+    usage << first_choice
+    solve_tile_usage size - t_size, usages, choice.dup
   end
 
   choice.shift
   if choice.length > 0 then
-    use << use_dup
-    solve_tile_usage size, use, choice
+    usages << usage_dup if usage != []
+    solve_tile_usage size, usages, choice
   end
   
-  use
+  usages
 end
 
 def solve_tile_pattern pattern_map, usage, solution
