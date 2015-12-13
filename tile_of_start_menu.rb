@@ -29,14 +29,23 @@ def solve_tile_usage size, use, choice
   use
 end
 
-def solve_tile_pattern pattern_map, usage
+def solve_tile_pattern pattern_map, usage, solution
   usage.each do |tile|
+    tile_matrix = eval(tile.shift)
     pattern_map.each_with_index do |row, i|
       row.each_with_index do |column, j|
-        tile = eval(first_choice.to_s)
-        if put? pattern_map, i, j, tile then
-          tile.each 
-          solve_tile_pattern 
+        if put? pattern_map, i, j, tile_matrix then
+          tile_matrix.each_with_index do |row, k|
+            row.each_with_index do |col, l|
+              pattern_map[i+k][j+l] = tile
+            end
+          end
+
+          return pattern_map if usage.nil?
+          ret = solve_tile_pattern pattern_map, usage.dup
+          solution << ret unless ret.nil?
+        else
+          nil
         end
       end
     end
