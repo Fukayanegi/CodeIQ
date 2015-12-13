@@ -42,26 +42,35 @@ def solve_tile_pattern pattern_map, usages
 end
 
 def solve_tile_pattern_by_usage pattern_map, tiles, solution
-  tile = tiles.shift
-  tile_matrix = eval(tile.to_s)
+  if tiles.uniq.count == 1 && tiles[0] == :A then
+    pattern_map.each_with_index do |row, i|
+      row.each_with_index do |column, j|
+        pattern_map[i][j] = :A if column == 0
+      end
+    end
+    solution << pattern_map
+  else
+    tile = tiles.shift
+    tile_matrix = eval(tile.to_s)
 
-  pattern_map.each_with_index do |row, i|
-    row.each_with_index do |column, j|
-      if put? pattern_map, i, j, tile_matrix then
-        pattern_map_dup = Marshal.load(Marshal.dump(pattern_map))
-        tile_matrix.each_with_index do |row, k|
-          row.each_with_index do |col, l|
-            pattern_map_dup[i+k][j+l] = tile
+    pattern_map.each_with_index do |row, i|
+      row.each_with_index do |column, j|
+        if put? pattern_map, i, j, tile_matrix then
+          pattern_map_dup = Marshal.load(Marshal.dump(pattern_map))
+          tile_matrix.each_with_index do |row, k|
+            row.each_with_index do |col, l|
+              pattern_map_dup[i+k][j+l] = tile
+            end
           end
-        end
 
-        if tiles.length == 0 then
-          solution << pattern_map_dup
+          if tiles.length == 0 then
+            solution << pattern_map_dup
+          else
+            solve_tile_pattern_by_usage pattern_map_dup, tiles.dup, solution
+          end
         else
-          solve_tile_pattern_by_usage pattern_map_dup, tiles.dup, solution
+          nil
         end
-      else
-        nil
       end
     end
   end
