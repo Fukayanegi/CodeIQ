@@ -1,41 +1,43 @@
+SIZES = {A:1, B:4, C:8, D:16}
 A = [[1]]
 B = [[1, 1], [1, 1]]
 C = [[1, 1, 1, 1], [1, 1, 1, 1]]
 D = [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]
 
 def solve width, height
-  usages = solve_tile_usage width * height, [[]], [:D, :C, :B, :A]
-  patterns = solve_tile_pattern Array.new(height) {Array.new(width, 0)}, usages.uniq
-  patterns.uniq
+  usages = solve_tile_usage width * height, [], [:D, :C, :B, :A]
+  p usages.uniq
+  #patterns = solve_tile_pattern Array.new(height) {Array.new(width, 0)}, usages.uniq
+  #patterns.uniq
 end
 
-def solve_tile_usage size, usages, choice
+def solve_tile_usage size, usage, choice
   first_choice = choice[0]
-  usage = usages[usages.size-1]
-  usage_dup = usage.dup
-  tile = eval(first_choice.to_s)
-  t_size = tile.inject(0) {|sum, array| sum += array.inject(:+)}
-#  puts "#{size}, #{t_size}, #{tile}"
+  next_usage = usage.dup
+  t_size = SIZES[first_choice]
+  ret_usage = []
 
   if size >= t_size
-    usage << first_choice
-    solve_tile_usage size - t_size, usages, choice.dup
+    next_usage << first_choice
+    ret = solve_tile_usage size - t_size, next_usage, choice.dup
+    ret_usage.concat ret if ret != []
   end
 
   choice.shift
   if choice.length > 0 then
-    usages << usage_dup if usage != []
-    solve_tile_usage size, usages, choice
+    ret = solve_tile_usage size, usage, choice
+    ret_usage.concat ret if ret != []
+  else
+    ret_usage << usage if size == 0
   end
   
-  usages
+  ret_usage
 end
 
 def solve_tile_pattern pattern_map, usages
   solution = []
   usages.each do |tiles|
     temp = (solve_tile_pattern_by_usage Marshal.load(Marshal.dump(pattern_map)), tiles, [])
-    p temp
     solution.concat temp
   end
   return solution
@@ -95,7 +97,7 @@ if size.nil?
 end
 
 width, height = size.split(',')
-puts "INPUT : Width = #{width}, Height = #{height}"
+#puts "INPUT : Width = #{width}, Height = #{height}"
 begin
   width, height = Integer(width), Integer(height)
 rescue
@@ -106,7 +108,7 @@ end
 answer_tmp = solve width, height
 answer = answer_tmp.count
 
-#p answer_tmp
-puts "OUTPUT : Patterns = " + answer.to_s
+# p answer_tmp
+#puts "OUTPUT : Patterns = " + answer.to_s
 
 puts answer
