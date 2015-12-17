@@ -8,16 +8,12 @@ def solve width, height
   patterns = solve_improve Array.new(height) {Array.new(width, 0)}, [:D, :C, :B, :A]
   p patterns.uniq
   patterns.uniq
-  # usages = solve_tile_usage width * height, [], [:D, :C, :B, :A]
-  # patterns = solve_tile_pattern Array.new(height) {Array.new(width, 0)}, usages.uniq
-  # patterns.uniq
 end
 
 def solve_improve pattern_map, choices
   solution = []
   first_choice = choices[0]
   tile = eval(first_choice.to_s)
-  p first_choice
 
   if first_choice == :A then
     pattern_map.each_with_index do |row, i|
@@ -34,27 +30,51 @@ def solve_improve pattern_map, choices
       tile[0].length == pattern_map_dup[0].length
       solution << pattern_map_dup
     else
-      divide_map = divide pattern_map_dup, tile[0].length, tile.length
-      solution_temp1 = solve_improve divide_map, choices.dup
-      solution_temp2 = solve_improve pattern_map_dup, choices.dup
-      solution_temp1.each do |matrix_1|
-        solution_temp2.each do |matrix_2|
-          solution << (join matrix_1, matrix_2)
-        end
-      end
-      p solution
+      if pattern_map_dup.length > tile.length
+        divide_map_vertical = divide pattern_map_dup, pattern_map_dup[0].length, tile.length
+        # p divide_map_vertical
+        # p pattern_map_dup
+        solution_temp_above = solve_improve divide_map_vertical, choices.dup
+        solution_temp_beneath = solve_improve pattern_map_dup, choices.dup
 
-      pattern_map_dup_2 = Marshal.load(Marshal.dump(pattern_map))
-      divide_map_2 = divide pattern_map_dup_2, 1, tile[0].length
-      solution_temp1_2 = solve_improve divide_map_2, choices.dup
-      solution_temp2_2 = solve_improve pattern_map_dup_2, choices.dup
-      p solution_temp1_2 
-      p solution_temp2_2 
-      solution_temp1_2.each do |matrix_1|
-        solution_temp2_2.each do |matrix_2|
-          solution << (join matrix_1, matrix_2)
+        solution_temp_above.each do |matrix_v|
+          solution_temp_beneath.each do |matrix_b|
+            solution << (union matrix_v, matrix_b)
+          end
+        end
+
+        pattern_map_dup_2 = Marshal.load(Marshal.dump(pattern_map))
+        divide_map_vertical_2 = divide pattern_map_dup_2, pattern_map_dup_2[0].length, 1
+        solution_temp_above_2 = solve_improve divide_map_vertical_2, choices.dup
+        solution_temp_beneath_2 = solve_improve pattern_map_dup_2, choices.dup
+
+        solution_temp_above_2.each do |matrix_v|
+          solution_temp_beneath_2.each do |matrix_b|
+            solution << (union matrix_v, matrix_b)
+          end
+        end
+
+      else
+        divide_map = divide pattern_map_dup, tile[0].length, tile.length
+        solution_temp1 = solve_improve divide_map, choices.dup
+        solution_temp2 = solve_improve pattern_map_dup, choices.dup
+        solution_temp1.each do |matrix_1|
+          solution_temp2.each do |matrix_2|
+            solution << (join matrix_1, matrix_2)
+          end
+        end
+
+        pattern_map_dup_2 = Marshal.load(Marshal.dump(pattern_map))
+        divide_map_2 = divide pattern_map_dup_2, 1, tile.length
+        solution_temp1_2 = solve_improve divide_map_2, choices.dup
+        solution_temp2_2 = solve_improve pattern_map_dup_2, choices.dup
+        solution_temp1_2.each do |matrix_1|
+          solution_temp2_2.each do |matrix_2|
+            solution << (join matrix_1, matrix_2)
+          end
         end
       end
+
     end
   end
 
@@ -62,101 +82,6 @@ def solve_improve pattern_map, choices
   if choices.length > 0 then
     solution.concat (solve_improve pattern_map, choices)
   end
-  return solution
-end
-
-def solve_tile_usage size, usage, choice
-  first_choice = choice[0]
-  next_usage = usage.dup
-  t_size = SIZES[first_choice]
-  ret_usage = []
-
-  if size >= t_size
-    next_usage << first_choice
-    ret = solve_tile_usage size - t_size, next_usage, choice.dup
-    ret_usage.concat ret if ret != []
-  end
-
-  choice.shift
-  if choice.length > 0 then
-    ret = solve_tile_usage size, usage, choice
-    ret_usage.concat ret if ret != []
-  else
-    ret_usage << usage if size == 0
-  end
-  
-  ret_usage
-end
-
-def solve_tile_pattern pattern_map, usages
-  solution = []
-  usages.each do |tiles|
-    temp = (solve_tile_pattern_by_usage Marshal.load(Marshal.dump(pattern_map)), tiles)
-    solution.concat temp
-  end
-  return solution
-end
-
-def solve_tile_pattern_by_usage pattern_map, tiles
-  solution = []
-  p tiles
-
-  if tiles.uniq.count == 1 && tiles[0] == :A then
-    pattern_map.each_with_index do |row, i|
-      row.each_with_index do |column, j|
-        pattern_map[i][j] = :A if column == 0
-      end
-    end
-    solution << pattern_map
-  elsif tiles.uniq.count == 1
-    tiles.each do |tile|
-      tile_matrix = eval(tile.to_s)
-      pattern_map.each_with_index do |row, i|
-        row.each_with_index do |cpl, j|
-          if put? pattern_map, i, j, tile_matrix then
-            tile_matrix.each_with_index do |t_row, k|
-              t_row.each_with_index do |t_col, l|
-                pattern_map[i+k][j+l] = tile
-              end
-            end
-          end
-        end
-      end
-    end
-
-    invalid = pattern_map.inject(0) do |sum, row| 
-      sum += row.inject(0) do |sum, col|
-        sum += 1 if col.class != Symbol
-        sum
-      end
-    end
-    solution << pattern_map if invalid == 0
-  else
-    tile = tiles.shift
-    tile_matrix = eval(tile.to_s)
-
-    pattern_map.each_with_index do |row, i|
-      row.each_with_index do |cpl, j|
-        if put? pattern_map, i, j, tile_matrix then
-          pattern_map_dup = Marshal.load(Marshal.dump(pattern_map))
-
-          tile_matrix.each_with_index do |t_row, k|
-            t_row.each_with_index do |t_col, l|
-              pattern_map_dup[i+k][j+l] = tile
-            end
-          end
-
-          if tiles.length == 0 then
-            solution << pattern_map_dup
-          else
-            ret = solve_tile_pattern_by_usage pattern_map_dup, tiles.dup
-            solution << ret if ret != []
-          end
-        end
-      end
-    end
-  end
-
   return solution
 end
 
@@ -185,6 +110,10 @@ def divide pattern_map, width, height
       pattern_map[i].shift
     end
   end
+    
+  height.times do 
+    pattern_map.shift if pattern_map[0] == []
+  end
   splited_map
 end
 
@@ -199,9 +128,11 @@ def join pattern_map, tile
 end
 
 def union pattern_map, tile
+  pattern_map_dup = Marshal.load(Marshal.dump(pattern_map))
   tile.each do |row|
-    pattern_map << row
+    pattern_map_dup << row
   end
+  pattern_map_dup
 end
 
 size = STDIN.gets
