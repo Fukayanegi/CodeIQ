@@ -1,9 +1,11 @@
+require 'set'
+
 SIZES = {A:1, B:4, C:8, D:16}
+MEMO = {}
 A = [[1]]
 B = [[1, 1], [1, 1]]
 C = [[1, 1, 1, 1], [1, 1, 1, 1]]
 D = [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]
-MEMO = {}
 
 def p_map maps
   maps.each do |map|
@@ -14,17 +16,25 @@ def p_map maps
   end
 end
 
+def p_hash hash
+  hash.each do |key, val|
+    p key
+    p_map val
+  end
+end
+
 def solve width, height
   patterns = solve_improve Array.new(height) {Array.new(width, 0)}, [:D, :C, :B, :A]
-  #p_map patterns.uniq
-  patterns.uniq
+  #p_hash MEMO
+  #p_map patterns
+  patterns
 end
 
 def solve_improve pattern_map, choices
-  key = "#{pattern_map.length}*#{pattern_map[0].length}"
+  key = "#{pattern_map[0].length}*#{pattern_map.length}"  
   return MEMO[key] if MEMO.include? key
 
-  solution = []
+  solution = Set.new
   first_choice = choices[0]
   tile = eval(first_choice.to_s)
 
@@ -35,30 +45,23 @@ def solve_improve pattern_map, choices
       end
     end
     solution << pattern_map
-  elsif put? pattern_map, 0, 0, tile
+  elsif tile.length == pattern_map.length && tile[0].length == pattern_map[0].length
     pm_dup = Marshal.load(Marshal.dump(pattern_map))
     put pm_dup, 0, 0, tile, first_choice
+    solution << pm_dup
+  elsif put? pattern_map, 0, 0, tile
+    pattern_map.length.times do |i|
+      solution.merge (solve_with_vertical_divide pattern_map, pattern_map[0].length, i, choices) if i > 0
+    end
 
-    if tile.length == pm_dup.length && 
-      tile[0].length == pm_dup[0].length
-      solution << pm_dup
-    else
-      if pm_dup.length > tile.length
-        solution.concat (solve_with_vertical_divide pm_dup, pm_dup[0].length, tile.length, choices).uniq
-        pm_dup_2 = Marshal.load(Marshal.dump(pattern_map))
-        solution.concat (solve_with_vertical_divide pm_dup_2, pm_dup_2[0].length, 1, choices).uniq
-      else
-        solution.concat (solve_with_horizonal_divide pm_dup, tile[0].length, tile.length, choices).uniq
-        pm_dup_2 = Marshal.load(Marshal.dump(pattern_map))
-        solution.concat (solve_with_horizonal_divide pm_dup_2, 1, tile.length, choices).uniq
-      end
-
+    pattern_map[0].length.times do |i|
+      solution.merge (solve_with_horizonal_divide pattern_map, i, pattern_map.length, choices) if i > 0
     end
   end
 
   choices.shift
   if choices.length > 0 then
-    solution.concat (solve_improve pattern_map, choices).uniq
+    solution.merge (solve_improve pattern_map, choices)
   end
 
   MEMO[key] = solution if !MEMO.include? key && first_choice == :D
@@ -84,10 +87,11 @@ def put pattern_map, x, y, tile, sym
 end
 
 def solve_with_vertical_divide pattern_map, width, height, choices
-  solution = []
-  pattern_map_above = divide pattern_map, width, height
+  solution = Set.new
+  pm_dup = Marshal.load(Marshal.dump(pattern_map))
+  pattern_map_above = divide pm_dup, width, height
   sol_above = solve_improve pattern_map_above, choices.dup
-  sol_beneath = solve_improve pattern_map, choices.dup
+  sol_beneath = solve_improve pm_dup, choices.dup
 
   sol_above.each do |matrix_v|
     sol_beneath.each do |matrix_b|
@@ -99,12 +103,13 @@ def solve_with_vertical_divide pattern_map, width, height, choices
 end
 
 def solve_with_horizonal_divide pattern_map, width, height, choices
-  solution = []
-  pattern_map_left = divide pattern_map, width, height
-  sel_left = solve_improve pattern_map_left, choices.dup
-  sol_right = solve_improve pattern_map, choices.dup
+  solution = Set.new
+  pm_dup = Marshal.load(Marshal.dump(pattern_map))
+  pattern_map_left = divide pm_dup, width, height
+  sol_left = solve_improve pattern_map_left, choices.dup
+  sol_right = solve_improve pm_dup, choices.dup
 
-  sel_left.each do |matrix_v|
+  sol_left.each do |matrix_v|
     sol_right.each do |matrix_b|
       solution << (join matrix_v, matrix_b)
     end
