@@ -1,11 +1,20 @@
 require 'set'
 
-SIZES = {A:1, B:4, C:8, D:16}
+SIZES = {A:[1,1], B:[2,2], C:[4,2], D:[4,4]}
 MEMO = {}
+@miss = 0
+@total = 0
 A = [[1]]
 B = [[1, 1], [1, 1]]
 C = [[1, 1, 1, 1], [1, 1, 1, 1]]
 D = [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]
+# A = [1]
+# B = [11, 11]
+# C = [1111, 1111]
+# D = [1111, 1111, 1111, 1111]
+
+@now
+@target_time = 0
 
 def p_map maps
   maps.each do |map|
@@ -24,44 +33,68 @@ def p_hash hash
 end
 
 def solve width, height
-  patterns = solve_improve Array.new(height) {Array.new(width, 0)}, [:D, :C, :B, :A]
+  @now = Time.now
+  patterns = solve_improve width, height, [:D, :C, :B, :A], 0
   #p_hash MEMO
   #p_map patterns
+  p @total
+  p @miss
+  p MEMO.keys
+  p Time.now - @now
+  p @target_time
   patterns
 end
 
-def solve_improve pattern_map, choices
-  key = "#{pattern_map[0].length}*#{pattern_map.length}"  
+def solve_improve width, height, choices, choice
+  @total += 1
+  key = "#{width}*#{height}"  
+  #p key
   return MEMO[key] if MEMO.include? key
+  @miss += 1
 
   solution = Set.new
-  first_choice = choices[0]
-  tile = eval(first_choice.to_s)
+  first_choice = choices[choice]
 
   if first_choice == :A then
+    pattern_map = Array.new(height) {Array.new(width, 0)}
     pattern_map.each_with_index do |row, i|
       row.each_with_index do |column, j|
         pattern_map[i][j] = :A
       end
     end
     solution << pattern_map
-  elsif tile.length == pattern_map.length && tile[0].length == pattern_map[0].length
-    pm_dup = Marshal.load(Marshal.dump(pattern_map))
-    put pm_dup, 0, 0, tile, first_choice
-    solution << pm_dup
-  elsif put? pattern_map, 0, 0, tile
-    pattern_map.length.times do |i|
-      solution.merge (solve_with_vertical_divide pattern_map, pattern_map[0].length, i, choices) if i > 0
+  else
+    if SIZES[first_choice][0] == width && SIZES[first_choice][1] == height
+      tile = eval(first_choice.to_s)
+      pattern_map = Array.new(height) {Array.new(width, 0)}
+      put pattern_map, 0, 0, tile, first_choice
+      solution << pattern_map
     end
 
-    pattern_map[0].length.times do |i|
-      solution.merge (solve_with_horizonal_divide pattern_map, i, pattern_map.length, choices) if i > 0
+    (width / 2).times do |i|
+      sol_tmp = solve_with_horizonal_divide width, height, i+1, choices, choice
+      sol_tmp_r = reverse sol_tmp, i+1
+      # now = Time.now
+      solution.merge sol_tmp
+      solution.merge sol_tmp_r
+      # @target_time += now - Time.now
+    end
+
+    (height / 2).times do |i|
+      sol_tmp = solve_with_vertical_divide width, height, i+1, choices, choice
+      sol_tmp_upd = up_to_down sol_tmp, i+1
+      # now = Time.now
+      solution.merge sol_tmp
+      solution.merge sol_tmp_upd
+      # @target_time += Time.now - now
     end
   end
 
-  choices.shift
-  if choices.length > 0 then
-    solution.merge (solve_improve pattern_map, choices)
+  if first_choice != :A then
+    sol_tmp = solve_improve width, height, choices, choice + 1
+    # now = Time.now
+    solution.merge sol_tmp
+    # @target_time += Time.now - now
   end
 
   MEMO[key] = solution if !MEMO.include? key && first_choice == :D
@@ -86,68 +119,92 @@ def put pattern_map, x, y, tile, sym
   end
 end
 
-def solve_with_vertical_divide pattern_map, width, height, choices
+def solve_with_horizonal_divide map_width, map_height, width, choices, choice
   solution = Set.new
-  pm_dup = Marshal.load(Marshal.dump(pattern_map))
-  pattern_map_above = divide pm_dup, width, height
-  sol_above = solve_improve pattern_map_above, choices.dup
-  sol_beneath = solve_improve pm_dup, choices.dup
-
-  sol_above.each do |matrix_v|
-    sol_beneath.each do |matrix_b|
-      solution << (union matrix_v, matrix_b)
-    end
-  end
-
-  solution
-end
-
-def solve_with_horizonal_divide pattern_map, width, height, choices
-  solution = Set.new
-  pm_dup = Marshal.load(Marshal.dump(pattern_map))
-  pattern_map_left = divide pm_dup, width, height
-  sol_left = solve_improve pattern_map_left, choices.dup
-  sol_right = solve_improve pm_dup, choices.dup
+  sol_left = solve_improve width, map_height, choices, choice
+  sol_right = solve_improve map_width - width, map_height, choices, choice
 
   sol_left.each do |matrix_v|
     sol_right.each do |matrix_b|
-      solution << (join matrix_v, matrix_b)
+      sol_tmp = join matrix_v, matrix_b
+      now = Time.now
+      solution << sol_tmp
+      @target_time += Time.now - now
     end
   end
 
   solution
 end
 
-def divide pattern_map, width, height
-  splited_map = Array.new(height) {Array.new(width, 0)}
-  height.times do |i|
-    width.times do |j|
-      pattern_map[i].shift
+def solve_with_vertical_divide map_width, map_height, height, choices, choice
+  solution = Set.new
+  sol_above = solve_improve map_width, height, choices, choice
+  sol_beneath = solve_improve map_width, map_height - height, choices, choice
+
+  sol_above.each do |matrix_v|
+    sol_beneath.each do |matrix_b|
+      sol_tmp = union matrix_v, matrix_b
+      now = Time.now
+      solution << sol_tmp
+      @target_time += Time.now - now
     end
   end
-    
-  height.times do 
-    pattern_map.shift if pattern_map[0] == []
-  end
-  splited_map
+
+  solution
 end
 
 def join pattern_map, tile
-  pattern_map_dup = Marshal.load(Marshal.dump(pattern_map))
+  # now = Time.now
+  pm_dup = Marshal.load(Marshal.dump(pattern_map))
+  # @target_time += Time.now - now
   tile.each_with_index do |row, i|
     row.each do |column|
-      pattern_map_dup[i] << column
+      pm_dup[i] << column
     end
   end
-  pattern_map_dup
+  pm_dup
 end
 
 def union pattern_map, tile
-  pattern_map_dup = Marshal.load(Marshal.dump(pattern_map))
+  # now = Time.now
+  pm_dup = Marshal.load(Marshal.dump(pattern_map))
+  # @target_time += Time.now - now
   tile.each do |row|
-    pattern_map_dup << row
+    pm_dup << row
   end
-  pattern_map_dup
+  pm_dup
+end
+
+def reverse solution, baseline
+  sol_tmp = Set.new
+  solution.each do |pattern_map|
+    # now = Time.now
+    pm_dup = Marshal.load(Marshal.dump(pattern_map))
+    # @target_time += Time.now - now
+    pm_dup.each do |row|
+      baseline.times do
+        tmp = row.shift
+        row << tmp
+      end
+    end
+    sol_tmp << pm_dup
+  end
+  sol_tmp
+end
+
+def up_to_down solution, baseline
+  sol_tmp = Set.new
+  solution.each do |pattern_map|
+    # now = Time.now
+    pm_dup = Marshal.load(Marshal.dump(pattern_map))
+    # @target_time += Time.now - now
+    baseline.times do
+      tmp = pm_dup.shift
+      pm_dup << tmp
+    end
+    sol_tmp << pm_dup
+  end
+  sol_tmp
 end
 
 size = STDIN.gets
