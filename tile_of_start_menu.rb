@@ -159,40 +159,6 @@ def union above, beneath
   pm_dup
 end
 
-def reverse solution, baseline
-  sol_tmp = Set.new
-  # now = Time.now
-  solution.each do |pattern_map|
-    pm_rev = Array.new
-    pattern_map.each do |row|
-      left = row / 10**(Math.log10(row + 1).ceil - baseline)
-      right = row % 10**(Math.log10(row + 1).ceil - baseline)
-
-      pm_rev << right * 10**baseline + left
-    end
-    sol_tmp << pm_rev
-  end
-  # @target_time += Time.now - now
-  sol_tmp
-end
-
-def up_to_down solution, baseline
-  sol_tmp = Set.new
-  now = Time.now
-  solution.each do |pattern_map|
-    # now = Time.now
-    pm_upd = Marshal.load(Marshal.dump(pattern_map))
-    # @target_time += Time.now - now
-    baseline.times do |i|
-      tmp = pm_upd.shift
-      pm_upd << tmp
-    end
-    sol_tmp << pm_upd
-  end
-  @target_time += Time.now - now
-  sol_tmp
-end
-
 size = STDIN.gets
 if size.nil?
   puts "Warning size must not be nil"
