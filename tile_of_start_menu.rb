@@ -4,14 +4,10 @@ SIZES = {A:[1,1], B:[2,2], C:[4,2], D:[4,4]}
 MEMO = {}
 @miss = 0
 @total = 0
-A = [[1]]
-B = [[1, 1], [1, 1]]
-C = [[1, 1, 1, 1], [1, 1, 1, 1]]
-D = [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]
-# A = [1]
-# B = [11, 11]
-# C = [1111, 1111]
-# D = [1111, 1111, 1111, 1111]
+A = [1]
+B = [22, 22]
+C = [3333, 3333]
+D = [4444, 4444, 4444, 4444]
 
 @now
 @target_time = 0
@@ -36,12 +32,11 @@ def solve width, height
   @now = Time.now
   patterns = solve_improve width, height, [:D, :C, :B, :A], 0
   #p_hash MEMO
-  #p_map patterns
-  p @total
-  p @miss
-  p MEMO.keys
+  p_map patterns
+  # p @total
+  # p @miss
   p Time.now - @now
-  p @target_time
+  # p @target_time
   patterns
 end
 
@@ -56,18 +51,14 @@ def solve_improve width, height, choices, choice
   first_choice = choices[choice]
 
   if first_choice == :A then
-    pattern_map = Array.new(height) {Array.new(width, 0)}
+    pattern_map = Array.new(height)
     pattern_map.each_with_index do |row, i|
-      row.each_with_index do |column, j|
-        pattern_map[i][j] = :A
-      end
+      pattern_map[i] = Integer('1' * width)
     end
     solution << pattern_map
   else
     if SIZES[first_choice][0] == width && SIZES[first_choice][1] == height
-      tile = eval(first_choice.to_s)
-      pattern_map = Array.new(height) {Array.new(width, 0)}
-      put pattern_map, 0, 0, tile, first_choice
+      pattern_map = eval(first_choice.to_s)
       solution << pattern_map
     end
 
@@ -99,24 +90,6 @@ def solve_improve width, height, choices, choice
 
   MEMO[key] = solution if !MEMO.include? key && first_choice == :D
   return solution
-end
-
-def put? pattern_map, x, y, tile
-  tile.each_with_index do |row, i|
-    row.each_with_index do |column, j|
-      return false if (pattern_map.length <= x + i || pattern_map[0].length <= y + j)
-      return false if pattern_map[x+i][y+j] != 0
-    end
-  end
-  return true
-end
-
-def put pattern_map, x, y, tile, sym
-  tile.each_with_index do |row, i|
-    row.each_with_index do |column, j|
-      pattern_map[x+i][y+j] = sym
-    end
-  end
 end
 
 def solve_with_horizonal_divide map_width, map_height, width, choices, choice
@@ -153,23 +126,21 @@ def solve_with_vertical_divide map_width, map_height, height, choices, choice
   solution
 end
 
-def join pattern_map, tile
+def join left, right
   # now = Time.now
-  pm_dup = Marshal.load(Marshal.dump(pattern_map))
+  pm_dup = Marshal.load(Marshal.dump(left))
   # @target_time += Time.now - now
-  tile.each_with_index do |row, i|
-    row.each do |column|
-      pm_dup[i] << column
-    end
+  right.each_with_index do |row, i|
+    pm_dup[i] = pm_dup[i] * 10 ** (Math.log10(row + 1).ceil) + row
   end
   pm_dup
 end
 
-def union pattern_map, tile
+def union above, beneath
   # now = Time.now
-  pm_dup = Marshal.load(Marshal.dump(pattern_map))
+  pm_dup = Marshal.load(Marshal.dump(above))
   # @target_time += Time.now - now
-  tile.each do |row|
+  beneath.each do |row|
     pm_dup << row
   end
   pm_dup
@@ -179,15 +150,15 @@ def reverse solution, baseline
   sol_tmp = Set.new
   solution.each do |pattern_map|
     # now = Time.now
-    pm_dup = Marshal.load(Marshal.dump(pattern_map))
+    pm_rev = Array.new
     # @target_time += Time.now - now
-    pm_dup.each do |row|
-      baseline.times do
-        tmp = row.shift
-        row << tmp
-      end
+    pattern_map.each do |row|
+      left = row / 10**(Math.log10(row + 1).ceil - baseline)
+      right = row % 10**(Math.log10(row + 1).ceil - baseline)
+
+      pm_rev << right * 10**baseline + left
     end
-    sol_tmp << pm_dup
+    sol_tmp << pm_rev
   end
   sol_tmp
 end
@@ -196,13 +167,13 @@ def up_to_down solution, baseline
   sol_tmp = Set.new
   solution.each do |pattern_map|
     # now = Time.now
-    pm_dup = Marshal.load(Marshal.dump(pattern_map))
+    pm_upd = Marshal.load(Marshal.dump(pattern_map))
     # @target_time += Time.now - now
-    baseline.times do
-      tmp = pm_dup.shift
-      pm_dup << tmp
+    baseline.times do |i|
+      tmp = pm_upd.shift
+      pm_upd << tmp
     end
-    sol_tmp << pm_dup
+    sol_tmp << pm_upd
   end
   sol_tmp
 end
