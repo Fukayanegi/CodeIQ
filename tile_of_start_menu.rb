@@ -4,10 +4,10 @@ SIZES = {A:[1,1], B:[2,2], C:[4,2], D:[4,4]}
 MEMO = {}
 @miss = 0
 @total = 0
-A = [1]
-B = [22, 22]
-C = [3333, 3333]
-D = [4444, 4444, 4444, 4444]
+A = ["1"]
+B = ["22", "22"]
+C = ["3333", "3333"]
+D = ["4444", "4444", "4444", "4444"]
 
 @now
 @target_time = 0
@@ -32,10 +32,10 @@ def solve width, height
   @now = Time.now
   patterns = solve_improve width, height, [:D, :C, :B, :A], 0
   #p_hash MEMO
-  p_map patterns
+  # p_map patterns
   # p @total
   # p @miss
-  p Time.now - @now
+  # p Time.now - @now
   # p @target_time
   patterns
 end
@@ -53,7 +53,7 @@ def solve_improve width, height, choices, choice
   if first_choice == :A then
     pattern_map = Array.new(height)
     pattern_map.each_with_index do |row, i|
-      pattern_map[i] = Integer('1' * width)
+      pattern_map[i] = "1" * width
     end
     solution << pattern_map
   else
@@ -62,23 +62,27 @@ def solve_improve width, height, choices, choice
       solution << pattern_map
     end
 
-    (width / 2).times do |i|
-      sol_tmp = solve_with_horizonal_divide width, height, i+1, choices, choice
-      sol_tmp_r = reverse sol_tmp, i+1
-      # now = Time.now
-      solution.merge sol_tmp
-      solution.merge sol_tmp_r
-      # @target_time += now - Time.now
+    # now = Time.now
+    (width).times do |i|
+      if i > 0
+        sol_tmp = (solve_with_horizonal_divide width, height, i, choices, choice)
+        # now = Time.now
+        solution.merge sol_tmp
+        # @target_time += Time.now - now
+      end
     end
+    # @target_time += Time.now - now
 
-    (height / 2).times do |i|
-      sol_tmp = solve_with_vertical_divide width, height, i+1, choices, choice
-      sol_tmp_upd = up_to_down sol_tmp, i+1
-      # now = Time.now
-      solution.merge sol_tmp
-      solution.merge sol_tmp_upd
-      # @target_time += Time.now - now
+    # now = Time.now
+    (height).times do |i|
+      if i > 0
+        sol_tmp = (solve_with_vertical_divide width, height, i, choices, choice) 
+        # now = Time.now
+        solution.merge sol_tmp
+        # @target_time += Time.now - now
+      end
     end
+    # @target_time += Time.now - now
   end
 
   if first_choice != :A then
@@ -99,10 +103,12 @@ def solve_with_horizonal_divide map_width, map_height, width, choices, choice
 
   sol_left.each do |matrix_v|
     sol_right.each do |matrix_b|
+      # now = Time.now
       sol_tmp = join matrix_v, matrix_b
-      now = Time.now
+      # @target_time += Time.now - now
+      # now = Time.now
       solution << sol_tmp
-      @target_time += Time.now - now
+      # @target_time += Time.now - now
     end
   end
 
@@ -116,10 +122,12 @@ def solve_with_vertical_divide map_width, map_height, height, choices, choice
 
   sol_above.each do |matrix_v|
     sol_beneath.each do |matrix_b|
+      # now = Time.now
       sol_tmp = union matrix_v, matrix_b
-      now = Time.now
+      # @target_time += Time.now - now
+      # now = Time.now
       solution << sol_tmp
-      @target_time += Time.now - now
+      # @target_time += Time.now - now
     end
   end
 
@@ -130,9 +138,12 @@ def join left, right
   # now = Time.now
   pm_dup = Marshal.load(Marshal.dump(left))
   # @target_time += Time.now - now
+  # now = Time.now
   right.each_with_index do |row, i|
-    pm_dup[i] = pm_dup[i] * 10 ** (Math.log10(row + 1).ceil) + row
+    # pm_dup[i] = pm_dup[i] * 10 ** (Math.log10(row + 1).ceil) + row
+    pm_dup[i] = pm_dup[i] + row
   end
+  # @target_time += Time.now - now
   pm_dup
 end
 
@@ -140,18 +151,19 @@ def union above, beneath
   # now = Time.now
   pm_dup = Marshal.load(Marshal.dump(above))
   # @target_time += Time.now - now
+  # now = Time.now
   beneath.each do |row|
     pm_dup << row
   end
+  # @target_time += Time.now - now
   pm_dup
 end
 
 def reverse solution, baseline
   sol_tmp = Set.new
+  # now = Time.now
   solution.each do |pattern_map|
-    # now = Time.now
     pm_rev = Array.new
-    # @target_time += Time.now - now
     pattern_map.each do |row|
       left = row / 10**(Math.log10(row + 1).ceil - baseline)
       right = row % 10**(Math.log10(row + 1).ceil - baseline)
@@ -160,11 +172,13 @@ def reverse solution, baseline
     end
     sol_tmp << pm_rev
   end
+  # @target_time += Time.now - now
   sol_tmp
 end
 
 def up_to_down solution, baseline
   sol_tmp = Set.new
+  now = Time.now
   solution.each do |pattern_map|
     # now = Time.now
     pm_upd = Marshal.load(Marshal.dump(pattern_map))
@@ -175,6 +189,7 @@ def up_to_down solution, baseline
     end
     sol_tmp << pm_upd
   end
+  @target_time += Time.now - now
   sol_tmp
 end
 
