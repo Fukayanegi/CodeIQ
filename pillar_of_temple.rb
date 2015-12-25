@@ -146,11 +146,5 @@ def move_all placement
   placements
 end
 
-# in = STDIN.gets
-# if in.nil?
-#   puts "Warning input not be nil"
-#   exit 0
-# end
-
 answer = solve [@start], [@fin]
 puts answer * 2 + 1
