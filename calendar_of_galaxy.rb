@@ -1,2 +1,3 @@
 y = %w(t u v w x y z)
-p y
+i = STDIN.gets.chomp.split(".")
+p i
