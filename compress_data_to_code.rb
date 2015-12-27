@@ -1,7 +1,10 @@
 @rows = 2
+@one = "#"
 input = []
+output = ""
 @rows.times do
   input << STDIN.gets.chomp
 end
 
-puts input.join
+input.join.each_byte{|c| output << (c.ord == @one.ord ? "1" : "0")}
+puts output
