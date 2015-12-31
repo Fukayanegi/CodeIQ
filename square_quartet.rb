@@ -4,7 +4,10 @@ diff = b**2-a**2
 answer = []
 
 fin = (diff+1)/2
-(2..fin).each do |x|
+p "#{fin}"
+x = 2
+
+while x <= fin do 
   if 4*x**2-4*diff > 0
     d = Math.sqrt(4*x**2-4*diff)
     sol1, sol2 = (2*x+d)/2, (2*x-d)/2
@@ -16,7 +19,10 @@ fin = (diff+1)/2
       answer << x
       answer << (x-sol2).to_i
     end
+    # p "#{x}, #{sol1}, #{sol2}"
   end
+
+  x += 1
 end
 
 puts answer.inject(:+)
