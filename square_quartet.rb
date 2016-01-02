@@ -4,31 +4,27 @@ diff = b**2-a**2
 answer = []
 
 fin = (diff+1)/2
-p "#{fin}"
-x = 2
+x = Math.sqrt(diff).ceil
 
-while x <= fin do 
-  if x**2-diff > 0
-    d = Math.sqrt(x**2-diff)
-    if d % 1 == 0
-      sol1, sol2 = x+d, x-d
-      if x-sol1 > 0
-        answer << x.to_i
-        answer << (x-sol1).to_i
-      end
-      if x-sol2 > 0
-        answer << x
-        answer << (x-sol2).to_i
-      end
-    else
-      # while !(((x+1)**2-diff) % 1 == 0) do
-      #   x += 1
-      # end
+while x <= fin 
+  d = Math.sqrt(x**2-diff)
+  if d % 1 == 0
+    answer << x.to_i
+    answer << d.to_i
+
+    terms = x-d-1
+    break if terms <= 0 || x >= fin
+
+    a = 0.1
+    while (a % 1 != 0) && (x <= fin) && (terms > 0)
+      a = (diff+terms**2-terms)/terms
+      x = (a+1)/2
+      # p "#{a}, #{x}, #{terms}, #{diff}, #{fin}"
+      terms += -1
     end
-    # p "#{x}, #{sol1}, #{sol2}"
+  else
+    x += 1
   end
-
-  x += 1
 end
 
 puts answer.inject(:+)
