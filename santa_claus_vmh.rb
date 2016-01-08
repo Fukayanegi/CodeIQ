@@ -7,24 +7,25 @@ def solve pass, from, to
 
   r_f,c_f = from.split(',')
   r_t,c_t = to.split(',')
-  next_root = r_f < r_t || c_f < c_t ? from + "@" + to : to + "@" + from
+  next_pass = r_f < r_t || c_f < c_t ? from + "-" + to : to + "-" + from
 
-  pass << next_root
+  pass << next_pass
 
-  if next_root == "0,0@0,1"
+  if next_pass == "0,0-0,1"
     # p pass
+    # p "#{pass.count}"
     return pass.count
   end
 
-  n_a = to + "@" + (r_t.to_i+1).to_s + "," + c_t # down
-  n_b = to + "@" + r_t + "," + (c_t.to_i+1).to_s # right
-  n_c = r_t + "," + (c_t.to_i-1).to_s + "@" + to # left
-  n_d = (r_t.to_i-1).to_s + "," + c_t + "@" + to # up
+  n_a = to + "-" + (r_t.to_i+1).to_s + "," + c_t # down
+  n_b = to + "-" + r_t + "," + (c_t.to_i+1).to_s # right
+  n_c = r_t + "," + (c_t.to_i-1).to_s + "-" + to # left
+  n_d = (r_t.to_i-1).to_s + "," + c_t + "-" + to # up
 
   # p "#{r_t}, #{c_t}, #{n_a}"
   # p "#{r_t}, #{c_t}, #{n_b}"
-  # p "#{r_t}, #{c_t}, #{n_c}" if n_c == "0,0@0,1"
-  # p "#{r_t}, #{c_t}, #{n_d}" if n_d == "0,1@1,1"
+  # p "#{r_t}, #{c_t}, #{n_c}"
+  # p "#{r_t}, #{c_t}, #{n_d}"
 
   # p r.to_i < @h && !pass.include?(n_a)
   # p c.to_i < @w && !pass.include?(n_b)
