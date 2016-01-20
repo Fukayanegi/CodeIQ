@@ -4,10 +4,13 @@
 @hook = @hook - 2
 
 def solve runner, hook, previous
+  p "#{runner}, #{hook}, #{previous}"
   if runner == hook
     return 1
   elsif runner / 2 > hook
     return 0
+  elsif hook == 0
+    return 1
   end
 
   if previous == 0
