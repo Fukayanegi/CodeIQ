@@ -13,9 +13,9 @@ def solve runner, hook, previous
   if previous == 0
     return solve runner-1, hook-1, 1
   else
-    hook = solve runner-1, hook-1, 1
-    unhook = solve runner-1, hook, 0
-    return hook + unhook
+    on = solve runner-1, hook-1, 1
+    off = solve runner-1, hook, 0
+    return on + off
   end
 end
 
