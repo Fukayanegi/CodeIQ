@@ -2,9 +2,13 @@
 
 @runner = @runner - 2
 @hook = @hook - 2
+
 @memo = Hash.new
 
 def solve runner, hook, previous
+
+  return 0 if hook > runner
+
   key = "#{runner}:#{hook}:#{previous}"
 
   if runner == hook
