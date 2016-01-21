@@ -6,7 +6,18 @@ direction = start < destination ? 1 : -1
 stopped = Array.new(c_stations) {0}
 
 def move stopped, direction, destination
-  0
+  patterns = 0
+  stopped.each_with_index do |station, i|
+    patterns += 1 if i = destination
+    overslept = destination == 1 && destination < i && station == 0
+    overslept = overslept || (destination == -1 && destination > i && station == 0)
+    if overslept
+      stopped[i] = 1
+      patterns += move stopped, -1*direction, destination
+      stopped[i] = 0
+    end
+  end
+  return patterns
 end
 
 puts move stopped, direction, destination
