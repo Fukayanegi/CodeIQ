@@ -1,12 +1,7 @@
 document = STDIN.gets
 
-buf = ""
-escape = false
-document.each_char do |c|
-  buf << c
-  escape = !escape if (c == "\"")
-  if !escape && (c == "." || c == "?")
-    puts buf.strip
-    buf = ""
-  end
+matches = document.scan(/.*?\D+?.*?(?<!Mr)(?<!Ms)(?<!Mrs)(?<!Mt)\.+? |.*?\D+?.*?(?<!Mr)(?<!Ms)(?<!Mrs)(?<!Mt)\?+? |.*?\D+?.*?(?<!Mr)(?<!Ms)(?<!Mrs)(?<!Mt)\!+? |.*?\D+?.*?(?<!Mr)(?<!Ms)(?<!Mrs)(?<!Mt).+?\Z/)
+
+matches.each do |md|
+  puts md
 end
