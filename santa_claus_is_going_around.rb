@@ -25,14 +25,14 @@ def calc_best_route houses, present
     (0..c_houses-1).each do |next_i|
 
       next_house = houses.slice! next_i
-      route = (calc_best_route houses, next_house).unshift next_house
-      energy = calc_energy (route.dup.unshift present)
+      route = ([] << next_house).concat(calc_best_route houses, next_house)
+      energy = present * next_house * route.inject(:+) + calc_energy(route)
 
       # p "route: #{route} ,#{next_house}, #{route} : #{energy}" #if next_house == 4 && houses.length == 3
       min_energy, best_route = [energy, route] if min_energy > energy
 
       houses.insert next_i, next_house
-      # p "best_route: #{best_route}"
+      # p "best_route: #{best_route}" if c_houses == 5
       # p min_energy      
     end
 
