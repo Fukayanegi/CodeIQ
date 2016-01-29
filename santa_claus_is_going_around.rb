@@ -1,63 +1,61 @@
 c_houses_all = STDIN.gets.chomp.to_i
 houses = []
 @memo = Hash.new
-@memo2 = Hash.new
 
 c_houses_all.times do
   houses << STDIN.gets.chomp.to_i
 end
 
-def calc_best_route houses
-  # p "houses: #{houses}"
+def calc_best_route houses, present
   c_houses = houses.length
   return [] if c_houses == 0
-  return houses if c_houses == 1
-  # return [11,1,10,2,9,3,4,5,6,7,8] if houses == [1,2,3,4,5,6,7,8,9,10,11]
+  return houses.dup if c_houses == 1
+  # return [11,1,10,2,9,3,6,4,7,5,8] if houses == [1,2,3,4,5,6,7,8,9,10,11]
 
   min_energy = Float::INFINITY
-  key_all = houses.sort.join("")
+  key = "#{present}:#{houses.sort.join("")}"
   best_route = []
 
-  if @memo2.include? key_all
-    best_route = @memo2[key_all] 
-    # min_energy = calc_energy best_route
+  # p "#{key}, #{houses}"
+  # sleep(1)
+
+  if @memo.include? key
+    best_route = @memo[key] 
   else
-    # p "c_houses: #{c_houses}"
-    c_houses.times do |target_i|
+    (0..c_houses-1).each do |next_i|
 
-      target = houses.slice!(target_i-1)
+      next_house = houses.slice! next_i
+      route = (calc_best_route houses, next_house).unshift next_house
+      energy = calc_energy (route.dup.unshift present)
 
-      (c_houses-1).times do |visit_i|
-        # p "#{target}, #{houses[0..visit_i]}, #{houses[visit_i+1..(c_houses-2)]}"
-        # key = create_key houses[0..visit_i], target, houses[visit_i+1..(c_houses-2)]
+      # p "route: #{route} ,#{next_house}, #{route} : #{energy}" #if next_house == 4 && houses.length == 3
+      min_energy, best_route = [energy, route] if min_energy > energy
 
-        # if @memo.include? key
-        #   route = @memo[key]
-          # p "#{key} : #{route}"
-        # else
-          passed = calc_best_route houses[0..visit_i]
-          rest = calc_best_route houses[visit_i+1..(c_houses-2)]
-          route = ([].concat(passed) << target).concat(rest)      
-          # @memo[key] = route
-          # p "add memo << #{key} : #{route}"
-        # end
-
-        energy = calc_energy route
-        min_energy, best_route = [energy, route] if min_energy > energy
-      end
-
-      houses.insert target_i-1, target
+      houses.insert next_i, next_house
       # p "best_route: #{best_route}"
       # p min_energy      
     end
-    @memo2[key_all] = best_route
+
+    # p "#{key} ::  #{best_route}"
+    @memo[key] = best_route
   end
 
   best_route
 end
 
-def create_key passed, nxt, rest
-  "#{passed.sort.join("")}:#{nxt}:#{rest.sort.join("")}"
+def calc_min_energy frist, rest
+  route = ([]<<first).concat(rest)
+  key = route.sort.join("")
+  if @memo.include? key
+    calc_energy @memo[key]
+  else
+    min_energy = Float::INFINITY
+    rest.permutaiton.each do |perm|
+      energy = calc_energy [[]<<first].concat(perm)
+      min_energy = energy if min_energy > energy
+    end
+    min_energy
+  end
 end
 
 def calc_energy route
@@ -71,7 +69,7 @@ def calc_energy route
     energy
 end
 
-route = calc_best_route houses
+route = calc_best_route houses, 0
 
-# p route
+p route
 puts calc_energy route
