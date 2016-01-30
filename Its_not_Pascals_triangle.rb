@@ -1,23 +1,22 @@
 base_row = "a".ord
 base_col = "A".ord
+c_row = "z".ord - base_row + 1
+c_col = "Z".ord - base_col + 1
 
 position = STDIN.gets.chomp!
-row , col = position[0], position[1]
+row , col = position[0].ord - base_row, position[1].ord - base_col
 
-# from http://blog.h13i32maru.jp/entry/20101016/1287227174
-module Fibonacci
-  @@memo = [0 , 1];
+table = [] << Array.new(c_col) { 0 }
 
-  def self.[](n)
-    if @@memo.size <= n
-      @@memo[n - 1] = self[n - 1] unless @@memo[n - 1];
-      @@memo[n] = @@memo[n - 2] + @@memo[n - 1];
-    end
-
-    return @@memo[n];
+c_row.times do |row|
+  row_tmp = [1]
+  first = 0
+  second = 1
+  (c_col-1).times do |col|
+    first, second = second, (first + second + table[-1][col+1])
+    row_tmp << second
   end
+  table << row_tmp
 end
 
-fib = Fibonacci[26]
-
-p "#{row.ord - base_row}, #{col.ord - base_col}"
+puts table[row+1][col]
