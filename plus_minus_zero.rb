@@ -1,8 +1,13 @@
 n = STDIN.gets.chomp!.to_i
+@memo = Hash.new
 
 def num_of_zero_pattern n, target
+  key = "#{n}:#{target}"
+  return @memo[key] if @memo.include? key
+
   return 0 if target > n*(n+1)/2 || n <= 0 || target <= 0
   return 1 if target == n*(n+1)/2
+
   answer = 0
   if target <= n
     answer += 1
@@ -12,6 +17,8 @@ def num_of_zero_pattern n, target
       answer += num_of_zero_pattern i-1, target-i
     end
   end
+
+  @memo[key] = answer
   answer
 end
 
