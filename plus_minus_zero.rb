@@ -23,4 +23,8 @@ def num_of_zero_pattern n, target
 end
 
 target = n*(n+1)/2/2
-p num_of_zero_pattern n, target
+if n.to_f*(n+1) % 4 == 0 then
+  p num_of_zero_pattern n, target
+else
+  p 0
+end
