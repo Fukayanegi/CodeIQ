@@ -1,22 +1,23 @@
-a, b, max_tries = STDIN.gets.chomp!.split(',').map{|value| value.to_i}
+coins_a, coins_b, max_tries = STDIN.gets.chomp!.split(',').map{|value| value.to_i}
 
 @memo = Hash.new
-@route = Array.new
-def num_of_pattern coins, coins_for_win, c_try, max_tries
-  key = "#{c_try}:#{coins}:#{max_tries}"
-  return @memo[key] if @memo.include? key
 
-  return 1 if (coins == 1 || coins == coins_for_win-1) && max_tries == 1
-  return 0 if (coins > max_tries) && (coins < coins_for_win - max_tries)
+MAX_TRIES = max_tries
+COINS_FOR_WIN = coins_a+coins_b
+
+def count_patterns coins, tries
+  # 取得コインの数、残りゲーム回数をキーに結果をメモ化可能
+  key = "#{coins}:#{MAX_TRIES-tries}"
+  return @memo[key] if @memo.include? key
+  return 1 if coins == 0 || coins == COINS_FOR_WIN
+  return 0 if tries == MAX_TRIES
 
   answer = 0
-  answer += num_of_pattern coins-1, coins_for_win, c_try+1, max_tries-1 if coins > 1
-  answer += num_of_pattern coins+1, coins_for_win, c_try+1, max_tries-1 if coins < coins_for_win-1
+  answer += count_patterns coins+1, tries+1 # 勝ち
+  answer += count_patterns coins, tries+1   # 引き分け
+  answer += count_patterns coins-1, tries+1 # 負け
 
   @memo[key] = answer
-  answer
 end
 
-p "#{a}, #{b}, #{max_tries}"
-p num_of_pattern a, a+b, 0, max_tries
-p @memo
+p count_patterns coins_a, 0
