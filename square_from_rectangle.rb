@@ -1,16 +1,20 @@
-max_side_length, num_of_square = STDIN.gets.chomp!.split(',').map{|val| val.to_i}
+max_side_length, TARGET_SQUARES = STDIN.gets.chomp!.split(',').map{|val| val.to_i}
 
 @memo = Hash.new
 
-# num_of_square == 0 && width == height == 1がpatternの一つ
-# 引数で与えられたnum_of_suquareまでカウントしたら打ち切る
-def count_patterns width, height, num_of_square
-  return 1 if num_of_square == 1 && width == 1 && height == 1
-  return 0 if width == height || num_of_square == 1
-
+# 再帰呼び出しの度にnum_of_squaresをデクリメントしていき、
+# width == height、またはnum_of_square == 1のときの状態で、切り取れる正方形の数を返す
+# width != height、かつnum_of_suquares == 1の場合、TARGET_SQUARES+1を返すことで呼び出し元で条件に合わない形とさせる
+def cut_squares width, height, num_of_squares
   width, height = height, width if height > width
+  key = "#{width}:#{height}"
+  @memo[key] if @memo.include? key
 
-  count_patterns width-height, height, num_of_square-1
+  return 1 if width == height
+  return TARGET_SQUARES + 1 if num_of_squares == 1
+
+  @memo[key] = (cut_squares width - height, height, num_of_squares - 1) + 1
+  @memo[key]
 end
 
 # 最初の幅、高さが決まれば後は決まった処理の繰り返し
@@ -18,12 +22,12 @@ end
 # 高さの範囲：1..(幅-1)
 
 # max_side_length=7の場合、width = [7,6,5,4]
-width = Array.new((max_side_length.to_f/2).round) {|i| max_side_length - i }
+width = Array.new((max_side_length.to_f / 2).round) {|i| max_side_length - i }
 
 answer = 0
 width.each do |w|
-  (1..w-1).each do |h|
-    answer += count_patterns w, h, num_of_square
+  (1..(w - 1)).each do |h|
+    answer += 1 if (cut_squares w, h, TARGET_SQUARES) == TARGET_SQUARES
   end
 end
 
