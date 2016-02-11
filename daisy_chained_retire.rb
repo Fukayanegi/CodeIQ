@@ -3,4 +3,11 @@ input = Array.new(11)
   input[i] = STDIN.gets.chomp!
 end
 
-p input
+def count_menber_of_retire first_retired, members
+  p first_retired
+  p members
+  0
+end
+
+first = input.shift
+puts count_menber_of_retire first, input
