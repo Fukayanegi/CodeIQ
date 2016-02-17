@@ -1,5 +1,5 @@
 venues, classes = STDIN.gets.chomp!.split(",").map{|v| v.to_i}
-p "#{venues}, #{classes}"
+# p "#{venues}, #{classes}"
 
 class Solver
   def initialize venues, classes
@@ -9,6 +9,7 @@ class Solver
 
   def solve
     answer = 0
+    return answer if @venues == 0
 
     # 各会場で等しい回数受講するセッション数の最大値分繰り返す
     even_take_max = @classes / @venues
