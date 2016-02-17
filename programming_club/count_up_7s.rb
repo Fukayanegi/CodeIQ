@@ -1,6 +1,7 @@
 class Solver
-  def initialize range_to
+  def initialize range_to, number
     @range_to = range_to
+    @number = number
   end
 
   def solve
@@ -8,7 +9,7 @@ class Solver
     
     range = Range.new(1, @range_to)
     range.each do |num|
-      answer += num.to_s.scan("7").count
+      answer += num.to_s.scan(@number.to_s).count
     end
 
     answer
@@ -19,5 +20,7 @@ number = STDIN.gets.chomp!.to_i
 range_to = STDIN.gets.chomp!.to_i
 # p "#{number}, #{range_to}"
 
-solver = Solver.new range_to
-p solver.solve
+solver = Solver.new range_to, number
+count = solver.solve
+p 1
+p count
