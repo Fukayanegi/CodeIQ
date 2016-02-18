@@ -7,27 +7,27 @@ class Solver
 
   def solve
     answer = 0
-    
-    # range = Range.new(1, @range_to)
-    # range.each do |num|
-    #   answer += num.to_s.scan(@@target).count
-    # end
 
+    # 最上位の桁を固定相当の配列
+    lower_digit = @range_to.to_s.length - 1
+    lower_digits = (1..lower_digit).to_a
 
-    digit = @range_to.to_s.length - 1
-    max_ditit_limit = @range_to / (10 ** digit)
-    # p "#{digit}, #{max_ditit_limit}"
+    # 最上位の桁
+    upper_digit = @range_to.to_s[0].to_i
+    # p "#{upper_digit}, #{lower_digit}, #{lower_digits}"
 
-    digits = (1..digit).to_a
-    (1..digit).each do |select_num|
-      answer += digits.combination(select_num).to_a.count * select_num
+    (1..lower_digit).each do |select_num|
+      # 最上位の桁を固定した場合にselect_numだけ7がある数字の数を答えに加算
+      count_tmp = lower_digits.combination(select_num).to_a.count
+      answer += count_tmp * select_num
     end
     # p "#{answer}"
 
-    if max_ditit_limit >= 7
-      answer = (max_ditit_limit + 1) * answer + 10 ** digit
-    else
-      answer = max_ditit_limit * answer
+    # 最上位の桁が7未満の場合、最上位の桁のパターン分answerが存在する（最上位0も含めて）
+    answer = (upper_digit + 1) * answer
+    if upper_digit >= 7
+      # 最上位の桁が7以上の場合、最上位の桁=7の分answerが余計に存在する
+      answer += 10 ** lower_digit
     end
 
     answer
