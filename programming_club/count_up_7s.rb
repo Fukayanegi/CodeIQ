@@ -18,13 +18,16 @@ class Solver
 
     (1..lower_digit).each do |select_num|
       # 最上位の桁を固定した場合にselect_numだけ7がある数字の数を答えに加算
-      count_tmp = lower_digits.combination(select_num).to_a.count
-      answer += count_tmp * select_num
+      seven_pattern = lower_digits.combination(select_num).to_a.count
+      others_pattern = lower_digits.drop(select_num).permutation(lower_digit - select_num).to_a.count
+      # p "#{select_num}: #{seven_pattern}, #{others_pattern}"
+      answer += seven_pattern * others_pattern * select_num
     end
-    # p "#{answer}"
+    # p "after_loop: #{answer}"
 
     # 最上位の桁が7未満の場合、最上位の桁のパターン分answerが存在する（最上位0も含めて）
     answer = (upper_digit + 1) * answer
+    # p "after_mulipul: #{answer}"
     if upper_digit >= 7
       # 最上位の桁が7以上の場合、最上位の桁=7の分answerが余計に存在する
       answer += 10 ** lower_digit
