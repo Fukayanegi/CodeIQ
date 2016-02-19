@@ -4,7 +4,16 @@ class Solver
   end
 
   def solve
-    answer = 0
+    # m+1 > n * Math.log10(n) >= m となるnを求める
+    answer = 1
+
+    while (judge_value = answer * Math.log10(answer)) < @m + 1 do
+      if judge_value < @m + 1 && judge_value >= @m
+        break
+      end
+      answer += 1
+    end
+
     return answer
   end
 end
