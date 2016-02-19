@@ -1,0 +1,1 @@
+m = STDIN.gets.chomp!.to_i
