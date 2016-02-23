@@ -11,8 +11,10 @@ class Solver
   end
 
   def solve
-    @scores.sort_by! do |score|
-      [score.english, score.japanese, score.math]
+    @scores.sort! do |score1, score2|
+      (score2.english <=> score1.english).nonzero? ||
+      (score2.japanese <=> score1.japanese).nonzero? ||
+      score2.math <=> score1.math
     end
   end
 
