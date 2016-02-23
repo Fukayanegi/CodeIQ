@@ -1,6 +1,6 @@
 class Score
   def initialize fields
-    fields.each {|key, value| instance_variable_set("@#{key}", value)}
+    fields.each {|subject, value| instance_variable_set("@#{subject}", value)}
   end
 end
 
