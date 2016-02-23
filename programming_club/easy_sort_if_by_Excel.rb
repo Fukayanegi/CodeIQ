@@ -12,9 +12,12 @@ class Solver
 
   def solve
     @scores.sort! do |score1, score2|
-      (score2.english <=> score1.english).nonzero? ||
-      (score2.japanese <=> score1.japanese).nonzero? ||
-      score2.math <=> score1.math
+      judge = 0
+      @header.slice(1..-1).each do |subject|
+        break if (judge = score2.instance_variable_get("@#{subject}").to_i <=> \
+          score1.instance_variable_get("@#{subject}").to_i).nonzero?
+      end
+      judge
     end
   end
 
