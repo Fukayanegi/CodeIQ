@@ -4,19 +4,41 @@ class Score
   end
 end
 
-header = STDIN.gets.chomp!.split(",")
+class Solver
+  def initialize header, socores
+    @header = header
+    @scores = socores
+  end
+
+  def solve
+    @scores.sort_by! do |score|
+      [score.english, score.japanese, score.math]
+    end
+  end
+
+  def print
+    puts @header.join(",")
+    @scores.each do |score|
+      line = ""
+      @header.each do |subject|
+        line << score.instance_variable_get("@#{subject}") + ","
+      end
+      puts line[0..-2]
+    end
+  end
+end
 
 # 1行目の文字列で動的にインスタンス変数を定義
+header = STDIN.gets.chomp!.split(",")
 Score.class_eval do
   header.each do |subject|
     attr_accessor subject.to_sym
   end
 end
 
+# 2行目以降の文字列で、subject => score のHash生成
 scores = []
 while line = STDIN.gets do
-
-  # subjest => score のHash生成
   values = line.chomp!.split(",")  
   fields = Hash.new
   header.each_with_index {|key, i| fields[key] = values[i] }
@@ -24,15 +46,6 @@ while line = STDIN.gets do
   scores << (Score.new fields)
 end
 
-scores.sort_by! do |score|
-  [score.english, score.japanese, score.math]
-end
-
-puts header.join(",")
-scores.each do |score|
-  line = ""
-  header.each do |subject|
-    line << score.instance_variable_get("@#{subject}") + ","
-  end
-  puts line[0..-2]
-end
+solver = Solver.new header, scores
+solver.solve
+solver.print
