@@ -24,15 +24,16 @@ def factorial(number)
   (1..number).inject(1,:*)
 end
 
+total_move = 0
 # 1..total_booksのラベルを持った本が並んでいるケースを考える
 total_books.times do |pos|
   # pos = 最大値の場所とする
 
-  left_books = pos + 1
-  right_books = total_books - pos + 1
+  left_books = pos
+  right_books = total_books - pos - 1
 
   # fix_books = 最短回数でソートした場合、posより左側で動かす必要のない本の数
-  (1..left_books).each do |fix_books|
+  (0..left_books).each do |fix_books|
     # posより左側でfix_booksが順序をもって並んでいるパターン数をカウント
     fix_patterns = count_m_is_ordered_in_n fix_books, left_books
     # p "fix_patterns: #{left_books}, #{fix_books}, #{fix_patterns}"
@@ -48,7 +49,12 @@ total_books.times do |pos|
     # 5 * 6 * 7 * *
     # * 5 6 * 7 * *
     # 5 6 * * 7 * *
-    others_patterns = count_m_is_ordered_in_n(fix_books + 1, left_books) * factorial(total_books - fix_books - 2)
-    # p "others_patterns: #{left_books}, #{fix_books}, #{others_patterns}"
+    exculde_patterns = count_m_is_ordered_in_n(fix_books + 1, left_books) * factorial(total_books - fix_books - 2)
+    # p "exculde_patterns: #{left_books}, #{fix_books}, #{exculde_patterns}"
+
+    patterns = fix_patterns * factorial(total_books - fix_books - 1) - exculde_patterns
+    total_move += patterns * (total_books - fix_books - 1)
   end
 end
+
+p total_move
