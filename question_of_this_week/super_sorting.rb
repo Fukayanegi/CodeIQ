@@ -26,38 +26,49 @@ def factorial(number)
   (1..number).inject(1,:*)
 end
 
-total_move = 0
-# 1..total_booksのラベルを持った本が並んでいるケースを考える
-total_books.times do |pos|
-  # pos = 最大値の場所とする
+class Solver
+  def initialize total_books
+    @total_books = total_books
+  end
 
-  left_books = pos
-  right_books = total_books - pos - 1
+  def solve
+    total_move = 0
+    # 1..total_booksのラベルを持った本が並んでいるケースを考える
+    @total_books.times do |pos|
+      # pos = 最大値の場所とする
 
-  # fix_books = 最短回数でソートした場合、posより左側で動かす必要のない本の数
-  (0..left_books).each do |fix_books|
-    # posより左側でfix_booksが順序よく並んでいるパターン数をカウント
-    fix_patterns = count_m_is_ordered_in_n fix_books, left_books
-    # p "fix_patterns: #{left_books}, #{fix_books}, #{fix_patterns}"
+      left_books = pos
+      right_books = @total_books - pos - 1
 
-    # 除外する場合の数をカウント
-    # (left_booksの中に(total_books - fix_books - 1)のラベルを持った本が
-    # (total_books - fix_books)のラベルを持った本より左側にある場合の数)
-    # total_books=7,left_books=4、fix_books=2の場合、
-    # 下記の「4 * 5 6 7 * *」、「* 4 5 6 7 * *」、「4 5 * 6 7 * *」、「4 5 6 * 7 * *」のケース
-    # = 4 * 3! = 24
-    # * * 5 6 7 * *
-    # * 5 * 6 7 * *
-    # 5 * * 6 7 * *
-    # 5 * 6 * 7 * *
-    # * 5 6 * 7 * *
-    # 5 6 * * 7 * *
-    exculde_patterns = count_m_is_ordered_in_n(fix_books + 1, left_books) * factorial(total_books - fix_books - 2)
-    # p "exculde_patterns: #{left_books}, #{fix_books}, #{exculde_patterns}"
+      # fix_books = 最短回数でソートした場合、posより左側で動かす必要のない本の数
+      (0..left_books).each do |fix_books|
+        # posより左側でfix_booksが順序よく並んでいるパターン数をカウント
+        fix_patterns = count_m_is_ordered_in_n fix_books, left_books
+        # p "fix_patterns: #{left_books}, #{fix_books}, #{fix_patterns}"
 
-    patterns = fix_patterns * factorial(total_books - fix_books - 1) - exculde_patterns
-    total_move += patterns * (total_books - fix_books - 1)
+        # 除外する場合の数をカウント
+        # (left_booksの中に(@total_books - fix_books - 1)のラベルを持った本が
+        # (@total_books - fix_books)のラベルを持った本より左側にある場合の数)
+        # @total_books=7,left_books=4、fix_books=2の場合、
+        # 下記の「4 * 5 6 7 * *」、「* 4 5 6 7 * *」、「4 5 * 6 7 * *」、「4 5 6 * 7 * *」のケース
+        # = 4 * 3! = 24
+        # * * 5 6 7 * *
+        # * 5 * 6 7 * *
+        # 5 * * 6 7 * *
+        # 5 * 6 * 7 * *
+        # * 5 6 * 7 * *
+        # 5 6 * * 7 * *
+        exculde_patterns = count_m_is_ordered_in_n(fix_books + 1, left_books) * factorial(@total_books - fix_books - 2)
+        # p "exculde_patterns: #{left_books}, #{fix_books}, #{exculde_patterns}"
+
+        patterns = fix_patterns * factorial(@total_books - fix_books - 1) - exculde_patterns
+        total_move += patterns * (@total_books - fix_books - 1)
+      end
+    end
+
+    total_move
   end
 end
 
-p total_move
+solver = Solver.new total_books
+p solver.solve
