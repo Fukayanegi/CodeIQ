@@ -19,6 +19,12 @@ def count_m_is_ordered_in_n m, n
   return c1 + c2
 end
 
+def factorial(number)
+  number = 0 if number.nil?
+  (1..number).inject(1,:*)
+end
+
+# 1..total_booksのラベルを持った本が並んでいるケースを考える
 total_books.times do |pos|
   # pos = 最大値の場所とする
 
@@ -29,6 +35,20 @@ total_books.times do |pos|
   (1..left_books).each do |fix_books|
     # posより左側でfix_booksが順序をもって並んでいるパターン数をカウント
     fix_patterns = count_m_is_ordered_in_n fix_books, left_books
-    p "fix_patterns: #{left_books}, #{fix_books}, #{fix_patterns}"
+    # p "fix_patterns: #{left_books}, #{fix_books}, #{fix_patterns}"
+
+    # (left_booksの中に(total_books - fix_books - 1)のラベルを持った本が
+    # (total_books - fix_books)のラベルを持った本より左側にある場合の数)
+    # total_books=7,left_books=4、fix_books=2の場合、
+    # 下記の「4 * 5 6 7 * *」、「* 4 5 6 7 * *」、「4 5 * 6 7 * *」、「4 5 6 * 7 * *」のケース
+    # = 4 * 3! = 24
+    # * * 5 6 7 * *
+    # * 5 * 6 7 * *
+    # 5 * * 6 7 * *
+    # 5 * 6 * 7 * *
+    # * 5 6 * 7 * *
+    # 5 6 * * 7 * *
+    others_patterns = count_m_is_ordered_in_n(fix_books + 1, left_books) * factorial(total_books - fix_books - 2)
+    # p "others_patterns: #{left_books}, #{fix_books}, #{others_patterns}"
   end
 end
