@@ -1,22 +1,34 @@
 def insert_array ary, new_value
-  # FIXME: 探索アルゴリズムを二分探索に
-  ary.each_with_index do |value, index|
-    if new_value <= value
-      ary.insert(index, new_value)
-      break
+  insert_index = 0
+  if ary.length == 1
+    # 配列の長さが1の場合は挿入場所は2択
+    if new_value > ary[0]
+      insert_index = 1
     end
-  end
-  # p ary
-end
+  else
+    # 挿入場所を2分探索
+    index = ary.length / 2
+    delta = index
 
-def insert_array_rev ary, new_value
-  # FIXME: 探索アルゴリズムを二分探索に
-  ary.reverse.each_with_index do |value, index|
-    if new_value >= value
-      ary.insert(ary.length - index, new_value)
-      break
+    while true do 
+      delta = delta / 2
+      delta = 1 if delta == 0
+      if new_value < ary[index]
+        index = index - delta
+      else
+        index = index + delta
+      end
+
+      # 挿入場所が見つかったら探索終了（whileの条件にすると直感的でないためこの場で判断）
+      # p "#{ary.length}, #{new_value}, #{index}"
+      if (new_value >= ary[index - 1] || index == 0) && (index == ary.length || new_value <= ary[index])
+        insert_index = index
+        break
+      end
     end
   end
+
+  ary.insert(insert_index, new_value)
   # p ary
 end
 
@@ -27,11 +39,7 @@ p numbers[median_pos]
 while (line = STDIN.gets) do
   number = line.chomp!.to_i
 
-  if number <= numbers[median_pos]
-    insert_array numbers, number
-  else
-    insert_array_rev numbers, number
-  end
+  insert_array numbers, number
 
   if numbers.length.odd?
     median_pos += 1
