@@ -20,5 +20,5 @@ end
 
 solver = Solver.new
 solver.solve
-p "code:#{solver.code_count}"
-p "comment:#{solver.comment_count}"
+puts "code:#{solver.code_count}"
+puts "comment:#{solver.comment_count}"
