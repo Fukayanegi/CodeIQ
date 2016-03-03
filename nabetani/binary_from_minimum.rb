@@ -13,8 +13,7 @@ class Solver
 
   # n桁のbinaryの中に最大@x桁1が連続するものの数
   def count_target_pattern n, recursive
-    n = 0 if n < 0
-    return 2 ** n if (n <= @x && recursive == 1)
+    return Solver.power n if (n <= @x && recursive == 1)
     return @memo[n] if @memo.include? n
 
     # N-i..N-i-@x桁目が1でN-i+1桁目が0かつN-i-@x-1桁目が0となるものの累積
