@@ -46,7 +46,7 @@ class Solver
 
       patterns_tmp = count_target_pattern digits, 0
 
-      p "#{digits}, #{patterns_tmp}"
+      # p "#{digits}, #{patterns_tmp}"
     end
 
     return digits - 1, patterns
@@ -54,23 +54,60 @@ class Solver
 
   def max_number digits
     num = 1
-    (digits - 1).times do |try|
+    1.upto(digits - 1) do |try|
       num = (num << 1)
-      num += 1 if (try + 1) % @x != 0
+      num += 1 if (try + 1) % (@x + 1) != 0
     end
+    num
+  end
+
+  def continuous binary
+    binary.scan(/1*/).map{|match| match.length}.max
+  end
+
+  # digits桁でorder番目の数
+  def number digits, order
+    num = 1 << digits - 1
+    patterns = 0
+    
+    @x.upto(digits - 2).each do |d|
+      patterns = Solver.power(digits - d - 1) * (count_target_pattern d, 0)
+      # p "digits: #{d}, patterns: #{patterns}"
+      if patterns >= order
+        num += 1 << d
+        num += solve patterns - order
+        break
+      end
+    end
+
+    if patterns < order
+      num = ("1" * @x).to_i(2) << (digits - @x)
+      num += order - patterns
+    end
+
+    # p "#{num.to_s(2)}"
     num
   end
 
   def solve order
     return ("1"*@x).to_i(2) if order == 1
 
+    # 1が最大@x個以下連続する2進数の桁数とそのときの最大値の順番を求める
     digits, patterns = solve_digits order
     rest_patterns = order - patterns
+    # 最大値の順番と求められている順番が一致している場合最大値を返す
     return max_number digits if rest_patterns == 0
     
-    num = 1 << digits
+    if rest_patterns >= patterns
+      # p "number: #{digits+1}, #{rest_patterns}"
+      return number digits + 1, rest_patterns
+    end
 
-    p "#{digits}, #{patterns}, #{rest_patterns}, #{num}, #{num.to_s(2)}"
+    num = 1 << digits
+    rest_patterns -= 1 if @x == 1
+    return num if rest_patterns == 0
+
+    # p "#{digits}, #{patterns}, #{rest_patterns}, #{num}, #{num.to_s(2)}"
 
     (@x + 1).downto(2).each do |d|
       patterns = count_target_pattern digits - d, 0
@@ -86,3 +123,4 @@ end
 
 solver = Solver.new x
 p solver.solve y
+# p "#{(solver.solve y).to_s(2)}"
