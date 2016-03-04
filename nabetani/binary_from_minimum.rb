@@ -23,51 +23,61 @@ class Solver
       right = count_target_pattern(n - i - @x - 1, 1)
       answer += left * right
     end
+
+    # 両端に1が@x個並ぶ2進数の場合、ダブルカウントが発生するため減算
+    # FIXME: もっと綺麗なやり方があるはず
+    if n > @x * 2
+      answer -= count_target_pattern n - (@x + 1) * 2, 1
+    end
     @memo[n] = answer
     answer
-  end
-
-  # n桁以下の数の中で最大@x桁1が連続する数のp番目の数
-  def solve_nmy n, y
-    return 1
   end
 
   #　最大m桁1が連続する数がorder以下になる桁数とパターン数
   def solve_digits order
     patterns = 0
+    patterns_tmp = 0
     digits = @x - 1
 
-    while patterns < order
+    while patterns_tmp <= order
       # 繰り返し実行の最初に前回結果を累積する
       digits += 1
+      patterns = patterns_tmp
 
-      patterns = count_target_pattern digits, 0
+      patterns_tmp = count_target_pattern digits, 0
 
-      p "#{digits}, #{patterns}"
+      p "#{digits}, #{patterns_tmp}"
     end
 
-    return digits, patterns
+    return digits - 1, patterns
+  end
+
+  def max_number digits
+    num = 1
+    (digits - 1).times do |try|
+      num = (num << 1)
+      num += 1 if (try + 1) % @x != 0
+    end
+    num
   end
 
   def solve order
+    return ("1"*@x).to_i(2) if order == 1
+
     digits, patterns = solve_digits order
-
-    return order if order <= ("1"*@x).to_i(2)
-
     rest_patterns = order - patterns
-    num = 1 << (digits + 1)
+    return max_number digits if rest_patterns == 0
+    
+    num = 1 << digits
 
-    while rest_patterns > 0
-      1.upto(@x).each do |d|
-        patterns = count_target_pattern(digits - d)
-        if patterns > rest_patterns
-          d - 1
-          digits = digits - d
-          break
-        end
-        rest_patterns -= patterns
+    p "#{digits}, #{patterns}, #{rest_patterns}, #{num}, #{num.to_s(2)}"
+
+    (@x + 1).downto(2).each do |d|
+      patterns = count_target_pattern digits - d, 0
+      if patterns <= rest_patterns
+        num += solve rest_patterns
+        break
       end
-      num
     end
 
     num
@@ -75,5 +85,4 @@ class Solver
 end
 
 solver = Solver.new x
-# p solver.solve y
-p solver.solve_digits 29
+p solver.solve y
