@@ -11,9 +11,29 @@ class Solver
     2 ** num
   end
 
+  #　最大@x桁1が連続する2進数がorder以下になる桁数とパターン数
+  def solve_digits order
+    patterns = 0
+    patterns_tmp = 0
+    digits = @x - 1
+
+    while patterns_tmp <= order
+      # 繰り返し実行の最初に前回結果を累積する
+      digits += 1
+      patterns = patterns_tmp
+
+      patterns_tmp = count_target_pattern digits, 0
+
+      # p "#{digits}, #{patterns_tmp}"
+    end
+
+    return digits - 1, patterns
+  end
+
   # n桁のbinaryの中に最大@x桁1が連続するものの数
-  def count_target_pattern n, recursive
-    return Solver.power n if (n <= @x && recursive == 1)
+  # no_strict == 1 の場合1の連続数は@x以下でもOK
+  def count_target_pattern n, no_strict
+    return Solver.power n if (n <= @x && no_strict == 1)
     return @memo[n] if @memo.include? n
 
     # N-i..N-i-@x桁目が1でN-i+1桁目が0かつN-i-@x-1桁目が0となるものの累積
@@ -33,25 +53,6 @@ class Solver
     answer
   end
 
-  #　最大m桁1が連続する数がorder以下になる桁数とパターン数
-  def solve_digits order
-    patterns = 0
-    patterns_tmp = 0
-    digits = @x - 1
-
-    while patterns_tmp <= order
-      # 繰り返し実行の最初に前回結果を累積する
-      digits += 1
-      patterns = patterns_tmp
-
-      patterns_tmp = count_target_pattern digits, 0
-
-      # p "#{digits}, #{patterns_tmp}"
-    end
-
-    return digits - 1, patterns
-  end
-
   def max_number digits
     num = 1
     1.upto(digits - 1) do |try|
@@ -61,28 +62,45 @@ class Solver
     num
   end
 
-  def continuous binary
-    binary.scan(/1*/).map{|match| match.length}.max
-  end
-
   # digits桁でorder番目の数
+  # このメソッドが呼ばれる段階でdigits桁にorder番目の数が存在することは保証されている
   def number digits, order
-    num = 1 << digits - 1
+    # p "number >> digtis: #{digits}, order: #{order}"
+    num = 0
     patterns = 0
-    
-    @x.upto(digits - 2).each do |d|
-      patterns = Solver.power(digits - d - 1) * (count_target_pattern d, 0)
-      # p "digits: #{d}, patterns: #{patterns}"
-      if patterns >= order
-        num += 1 << d
-        num += solve patterns - order
-        break
+    patterns_tmp = 0
+
+    # 上位桁を1で埋める
+    1.upto(@x).each do |upper_digits|
+      break if patterns + patterns_tmp == order
+
+      num += (1 << (digits - upper_digits))
+      patterns += patterns_tmp
+      patterns_tmp = upper_digits != @x ? 0 : 1 # 初期化
+
+      # p "loop >> #{upper_digits}, num: #{num.to_s(2)}, patterns: #{patterns}"
+
+      # 0を挟んだ残りの桁で条件を満たすものをカウントする
+      @x.upto(digits - upper_digits - 1).each do |lower_digits|
+        patterns_tmp = count_target_pattern lower_digits, 0
+        # p "lower_digits: #{lower_digits}, patterns_tmp: #{patterns_tmp}, rest_order: #{order-patterns}"
+        if patterns_tmp == order - patterns
+          num += max_number lower_digits
+          break
+        elsif patterns_tmp > order - patterns
+          num += number lower_digits, order - patterns - count_target_pattern(lower_digits - 1, 0)
+          patterns_tmp = order - patterns
+          break
+        end
       end
+      # p "next #{num.to_s(2)}, patterns: #{patterns}, patterns_tmp: #{patterns_tmp}, order: #{order}"
+
     end
 
-    if patterns < order
-      num = ("1" * @x).to_i(2) << (digits - @x)
-      num += order - patterns
+    # 上位@x桁が全て1の場合のパターン数を足しても足りない場合 = 0を挟んだ下位桁が@x桁ない場合
+    if patterns + patterns_tmp != order
+      # p "shortage >> num: #{num.to_s(2)}, shortage: #{order - patterns + patterns_tmp}"
+      num += order - patterns - patterns_tmp
     end
 
     # p "#{num.to_s(2)}"
@@ -95,32 +113,15 @@ class Solver
     # 1が最大@x個以下連続する2進数の桁数とそのときの最大値の順番を求める
     digits, patterns = solve_digits order
     rest_patterns = order - patterns
+
     # 最大値の順番と求められている順番が一致している場合最大値を返す
     return max_number digits if rest_patterns == 0
-    
-    if rest_patterns >= patterns
-      # p "number: #{digits+1}, #{rest_patterns}"
-      return number digits + 1, rest_patterns
-    end
 
-    num = 1 << digits
-    rest_patterns -= 1 if @x == 1
-    return num if rest_patterns == 0
-
-    # p "#{digits}, #{patterns}, #{rest_patterns}, #{num}, #{num.to_s(2)}"
-
-    (@x + 1).downto(2).each do |d|
-      patterns = count_target_pattern digits - d, 0
-      if patterns <= rest_patterns
-        num += solve rest_patterns
-        break
-      end
-    end
-
-    num
+    # 桁数指定でrest_patterns番目の数を求める
+    # p "#{digits}, #{patterns}, #{rest_patterns}"
+    return number digits + 1, rest_patterns
   end
 end
 
 solver = Solver.new x
 p solver.solve y
-# p "#{(solver.solve y).to_s(2)}"
