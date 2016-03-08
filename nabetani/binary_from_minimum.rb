@@ -1,3 +1,5 @@
+# リファクタリングの余地ありあり
+
 x, y = STDIN.gets.chomp!.split(",").map{|value| value.to_i}
 
 class Solver
@@ -33,23 +35,33 @@ class Solver
   # n桁のbinaryの中に最大@x桁1が連続するものの数
   # no_strict == 1 の場合1の連続数は@x以下でもOK
   def count_target_pattern n, no_strict
+    # p "count_target_pattern >> n: #{n}, no_strict: #{no_strict}"
+    key = "#{n}:#{no_strict}"
+    # return 0 if n <= 0
+    # return 2 ** n if (n <= @x && no_strict == 1)
     return Solver.power n if (n <= @x && no_strict == 1)
-    return @memo[n] if @memo.include? n
+    return 1 if @x == 0
+    return 0 if n < @x
+    return @memo[key] if @memo.include? key
 
-    # N-i..N-i-@x桁目が1でN-i+1桁目が0かつN-i-@x-1桁目が0となるものの累積
     answer = 0
-    0.upto(n - @x).each do |i|
-      left = count_target_pattern i - 1, 1
-      right = count_target_pattern(n - i - @x - 1, 1)
-      answer += left * right
+    if no_strict == 0
+      # N-i..N-i-@x桁目が1でN-i+1桁目が0かつN-i-@x-1桁目が0となるものの累積
+      0.upto(n - @x).each do |i|
+        # 左側は1の連続が最大はNG => すでに数え上げているから
+        left = Solver.new(@x - 1).count_target_pattern i - 1, 1
+        right = count_target_pattern(n - i - @x - 1, 1)
+        # p "loop >> #{n}, #{i}, #{left}, #{right}"
+        answer += left * right
+      end
+    else
+      0.upto(@x).each do |x|
+        solver = Solver.new x
+        answer += solver.count_target_pattern n, 0
+      end
     end
 
-    # 両端に1が@x個並ぶ2進数の場合、ダブルカウントが発生するため減算
-    # FIXME: もっと綺麗なやり方があるはず
-    if n > @x * 2
-      answer -= count_target_pattern n - (@x + 1) * 2, 1
-    end
-    @memo[n] = answer
+    @memo[key] = answer
     answer
   end
 
@@ -59,6 +71,49 @@ class Solver
       num = (num << 1)
       num += 1 if (try + 1) % (@x + 1) != 0
     end
+    num
+  end
+
+  def number_no_strict digits, order
+    # p "number_no_strict >> digtis: #{digits}, order: #{order}"
+    return 0 if digits == 1 && order == 1
+
+    num = 0
+    patterns = 0
+    patterns_tmp = 0
+
+    # 上位桁を1で埋める
+    1.upto(@x).each do |upper_digits|
+      break if patterns + patterns_tmp == order
+
+      # 累積値の更新
+      num += (1 << (digits - upper_digits))
+      patterns += patterns_tmp
+
+      # 初期化
+      patterns_tmp = 1
+
+      # p "loop >> #{upper_digits}, num: #{num.to_s(2)}, patterns: #{patterns}"
+
+      # 0を挟んだ残りの桁で条件を満たすものをカウントする
+      1.upto(digits - upper_digits - 1).each do |lower_digits|
+        patterns_tmp = count_target_pattern lower_digits, 1
+        # p "lower_digits: #{lower_digits}, patterns_tmp: #{patterns_tmp}, rest_order: #{order-patterns}"
+
+        if patterns_tmp == order - patterns
+          num += max_number lower_digits
+          break
+        elsif patterns_tmp > order - patterns
+          patterns_before = lower_digits == 1 ? 0 : count_target_pattern(lower_digits - 1, 1)
+          num += number_no_strict(lower_digits, order - patterns - patterns_before)
+          patterns_tmp = order - patterns
+          break
+        end
+      end
+      # p "next #{num.to_s(2)}, patterns: #{patterns}, patterns_tmp: #{patterns_tmp}, order: #{order}"
+
+    end
+
     num
   end
 
@@ -74,21 +129,32 @@ class Solver
     1.upto(@x).each do |upper_digits|
       break if patterns + patterns_tmp == order
 
+      # 累積値の更新
       num += (1 << (digits - upper_digits))
       patterns += patterns_tmp
-      patterns_tmp = upper_digits != @x ? 0 : 1 # 初期化
+
+      # 初期化
+      patterns_tmp = 0
 
       # p "loop >> #{upper_digits}, num: #{num.to_s(2)}, patterns: #{patterns}"
 
       # 0を挟んだ残りの桁で条件を満たすものをカウントする
-      @x.upto(digits - upper_digits - 1).each do |lower_digits|
-        patterns_tmp = count_target_pattern lower_digits, 0
+      1.upto(digits - upper_digits - 1).each do |lower_digits|
+        is_no_strict = upper_digits == @x ? 1 : 0
+        patterns_tmp = count_target_pattern lower_digits, is_no_strict
         # p "lower_digits: #{lower_digits}, patterns_tmp: #{patterns_tmp}, rest_order: #{order-patterns}"
+
         if patterns_tmp == order - patterns
           num += max_number lower_digits
           break
         elsif patterns_tmp > order - patterns
-          num += number lower_digits, order - patterns - count_target_pattern(lower_digits - 1, 0)
+          patterns_before = lower_digits == 1 ? 0 : count_target_pattern(lower_digits - 1, is_no_strict)
+          # p "patterns_before: #{patterns_before}, lower_digits: #{lower_digits}"
+          if is_no_strict == 1
+            num += number_no_strict lower_digits, order - patterns - patterns_before
+          else
+            num += number lower_digits, order - patterns - patterns_before
+          end
           patterns_tmp = order - patterns
           break
         end
@@ -97,13 +163,6 @@ class Solver
 
     end
 
-    # 上位@x桁が全て1の場合のパターン数を足しても足りない場合 = 0を挟んだ下位桁が@x桁ない場合
-    if patterns + patterns_tmp != order
-      # p "shortage >> num: #{num.to_s(2)}, shortage: #{order - patterns + patterns_tmp}"
-      num += order - patterns - patterns_tmp
-    end
-
-    # p "#{num.to_s(2)}"
     num
   end
 
@@ -124,4 +183,6 @@ class Solver
 end
 
 solver = Solver.new x
-p solver.solve y
+answer = solver.solve y
+# p "#{answer.to_s(2)}"
+p answer
