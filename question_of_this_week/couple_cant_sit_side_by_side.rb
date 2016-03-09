@@ -1,2 +1,14 @@
 couples = STDIN.gets.chomp!
-p "#{couples}"
+
+class Solver
+  def initialize couples
+    @couples = couples
+  end
+
+  def solve
+    1
+  end
+end
+
+solver = Solver.new couples
+puts solver.solve
