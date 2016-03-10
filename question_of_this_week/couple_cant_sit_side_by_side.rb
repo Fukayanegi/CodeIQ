@@ -1,4 +1,4 @@
-couples = STDIN.gets.chomp!.to_i
+n = STDIN.gets.chomp.to_i
 
 class Solver
   def initialize couples
@@ -12,6 +12,7 @@ class Solver
 
   def count_patterns seat, couples, sex
     # p "count_patterns >> #{seat}, #{couples}, #{sex}"
+    # p "answer: #{seat}, #{couples}, #{sex}" if couples.length == 0
     return 1 if couples.length == 0
 
     patterns = 0
@@ -20,6 +21,7 @@ class Solver
     # p "lover: #{lover}"
     (@seat.length / 2).times do |i|
       seat_i = 2 * i + sex
+      # p "i: #{i}, sex: #{sex}, seat_i: #{seat_i}"
       left_i, right_i = (seat_i - 1) % seat.length, (seat_i + 1) % seat.length
 
       # p "left >> index: #{left_i}, value: #{seat[left_i]}"
@@ -31,7 +33,7 @@ class Solver
         seat[seat_i] = nil
       end
     end
-    couples.push lover
+    couples.unshift lover
     patterns
   end
 
@@ -42,5 +44,5 @@ class Solver
   end
 end
 
-solver = Solver.new couples
+solver = Solver.new n
 puts solver.solve
