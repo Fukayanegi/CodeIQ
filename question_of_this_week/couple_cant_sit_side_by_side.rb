@@ -2,45 +2,51 @@ n = STDIN.gets.chomp.to_i
 
 class Solver
   def initialize couples
-    @couples = Array.new
-    couples.times do |i| 
-      @couples << i
-      @couples << i
-    end
-    @seat = Array.new(couples * 2)
+    @couples = Array.new(couples) {|i| i}
+    @memo = Hash.new
   end
 
-  def count_patterns seat, couples, sex
-    # p "count_patterns >> #{seat}, #{couples}, #{sex}"
-    # p "answer: #{seat}, #{couples}, #{sex}" if couples.length == 0
-    return 1 if couples.length == 0
+  def count_patterns mens, seats, ladies
+    # p "count_patterns >> #{mens}, #{seats}, #{ladies}"
+    key = mens.join(":") + ">>" + ladies.join(":")
+    return @memo[key] if @memo.include? key
 
-    patterns = 0
-
-    lover = couples.shift
-    # p "lover: #{lover}"
-    (@seat.length / 2).times do |i|
-      seat_i = 2 * i + sex
-      # p "i: #{i}, sex: #{sex}, seat_i: #{seat_i}"
-      left_i, right_i = (seat_i - 1) % seat.length, (seat_i + 1) % seat.length
-
-      # p "left >> index: #{left_i}, value: #{seat[left_i]}"
-      # p "right >> index: #{right_i}, value: #{seat[right_i]}"
-      if seat[left_i] != lover && seat[right_i] != lover && seat[seat_i].nil?
-        seat[seat_i] = lover 
-        next_sex = sex == 0 ? 1 : 0
-        patterns += count_patterns seat, couples, next_sex
-        seat[seat_i] = nil
-      end
+    c_ladies = ladies.length
+    if c_ladies == 0
+      # p seats
+      return 1 
     end
-    couples.unshift lover
-    patterns
+
+    answer = 0
+    c_ladies.times do |i|
+      lover = ladies.delete_at i
+      if mens[seats.length] != lover && mens[(seats.length + 1) % mens.length] != lover
+        seats << lover
+        answer += count_patterns mens, seats, ladies
+        seats.pop
+        # p seats
+      end
+      ladies.insert(i, lover)
+      # p ladies
+    end    
+    # p "#{key}: #{answer}"
+    @memo[key] = answer
+    answer
   end
 
   def solve
-    @seat[0] = @couples.shift 
+    ladies = @couples.dup
+    seats = Array.new
 
-    count_patterns @seat, @couples, 1
+    answer = 0
+    @couples.permutation.each do |mens|
+      if mens[0] == 0
+
+        answer += count_patterns mens, seats, ladies
+      end
+    end
+
+    answer
   end
 end
 
