@@ -3,7 +3,7 @@ class Solver
     attr_accessor :fullname, :str, :num, :ext
     def initialize file_name
       @fullname = file_name
-      @str = file_name.match(/^(\w+?)(?=(\d+\.))(\d+)\./)[1]
+      @str = file_name.match(/^(\w*?)(?=(\d+\.))(\d+)\./)[1]
       @num = file_name.match(/(\d+)\./)[1]
       @ext = file_name.match(/\.(.*)$/)[1]
     end
@@ -19,6 +19,7 @@ class Solver
     while line = STDIN.gets
       @lines << FileName.new(line.chomp)
     end
+    p @lines
   end
 
   def solve
@@ -35,5 +36,4 @@ end
 
 solver = Solver.new
 solver.recieve_input
-p "*"*40
 solver.solve
