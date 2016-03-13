@@ -7,7 +7,7 @@ class Solver
     @c_teeth = c_teeth
   end
 
-  def is_proper_input?
+  def is_valid_input?
     return false if @c_teeth.odd?
     return false if @c_teeth > @sheeps * 6
     true
@@ -20,7 +20,7 @@ end
 
 solver = Solver.new m, n
 
-if !solver.is_proper_input?
+if !solver.is_valid_input?
   puts "error" 
 else
   min, max = solver.solve
