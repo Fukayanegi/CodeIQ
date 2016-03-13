@@ -13,8 +13,16 @@ class Solver
     true
   end
 
+  def max_muttons
+    old_3 = @c_teeth / 6
+    old_2 = (@c_teeth - 6 * old_3) / 4
+    old_1 = (@c_teeth - 6 * old_3 - 4 * old_2) / 2
+
+    @sheeps - [old_3, old_2, old_1].inject(:+)
+  end
+
   def solve
-    [0,0]
+    [max_muttons,0]
   end
 end
 
