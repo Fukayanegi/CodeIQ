@@ -7,11 +7,22 @@ class Solver
     @c_teeth = c_teeth
   end
 
+  def is_proper_input?
+    return false if @c_teeth.odd?
+    return false if @c_teeth > @sheeps * 6
+    true
+  end
+
   def solve
     [0,0]
   end
 end
 
 solver = Solver.new m, n
-min, max = solver.solve
-puts "#{min} #{max}"
+
+if !solver.is_proper_input?
+  puts "error" 
+else
+  min, max = solver.solve
+  puts "#{min} #{max}"
+end
