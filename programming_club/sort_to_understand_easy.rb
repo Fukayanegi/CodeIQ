@@ -1,5 +1,6 @@
 class Solver
   class FileName
+    attr_accessor :fullname, :str, :num, :ext
     def initialize file_name
       @fullname = file_name
       @str = file_name.match(/^(\w+?)(?=(\d+\.))(\d+)\./)[1]
@@ -21,12 +22,18 @@ class Solver
   end
 
   def solve
+    @lines.sort_by! do |line|
+      # p [line.str, line.num.to_i, line.num, line.ext]
+      [line.str, line.num.to_i, line.num, line.ext]
+    end
 
+    @lines.each do |line|
+      puts line.fullname
+    end
   end
 end
 
 solver = Solver.new
 solver.recieve_input
-solver.lines.each do |line|
-  p line
-end
+p "*"*40
+solver.solve
