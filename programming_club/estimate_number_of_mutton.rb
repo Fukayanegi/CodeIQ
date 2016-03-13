@@ -1,5 +1,5 @@
 m, n = STDIN.gets.chomp.split(" ").map{|val| val.to_i}
-p "#{m}, #{n}"
+# p "#{m}, #{n}"
 
 class Solver
   def initialize sheeps, c_teeth
@@ -21,8 +21,18 @@ class Solver
     @sheeps - [old_3, old_2, old_1].inject(:+)
   end
 
+  def min_muttons
+    # 2 * @sheeps <= @c_teeth <= 6 * @sheeps の間は0
+    # 前提：@c_theethが奇数の場合、6*@sheepsを超える場合はis_valid_input?で弾いている 
+    answer = 0
+    if @c_teeth / 2 < @sheeps
+      answer = @sheeps - @c_teeth / 2
+    end
+    answer
+  end
+
   def solve
-    [max_muttons,0]
+    [max_muttons, min_muttons]
   end
 end
 
