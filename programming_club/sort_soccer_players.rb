@@ -2,30 +2,30 @@ class Solver
   attr_accessor :hit, :total
 
   def initialize players
-    @players = players
-    @line = Array.new @players * 2
+    @players = Array.new(players) {|i| i + 1}
+    @line = Array.new players * 2
     @memo = Hash.new
     @hit = 0
     @total = 0
   end
 
-  def create_key line, players
-    pattern = line.map{|pos| pos.nil? ? "0" : "*"}.join(":")
-    pattern = pattern.scan(/^((\*:)*)(.+?)((:\*)*)$/)[0][2]
-    filled_pos = pattern.index("*")
-    pattern.reverse! if !filled_pos.nil? && filled_pos > pattern.length / 2
+  def create_key
+    pattern = @line.map{|pos| pos.nil? ? "0" : "*"}.join(":")
+    # pattern = pattern.scan(/^((\*:)*)(.+?)((:\*)*)$/)[0][2]
+    # filled_pos = pattern.index("*")
+    # pattern.reverse! if !filled_pos.nil? && filled_pos > pattern.length / 2
     # p pattern
-    players.to_s + ">>" + pattern
+    @players.join(":") + ">>" + pattern
   end
 
-  def solve max_number
+  def solve line_i
     @total += 1
     # メモ化のためのkey生成
     # 配列の空きパターンと残りの選手
-    key = create_key @line, max_number
-    # p key
+    key = create_key
+    p key
 
-    return 1 if max_number == 0
+    return 1 if @players.length == 0
     if @memo.include? key
       @hit += 1
       # p "cached answer ***** >> #{key}, #{@memo[key]}"
@@ -34,33 +34,27 @@ class Solver
 
     # 探索
     answer = 0
-    @line.each_with_index do |pos, i|
-      j = i + max_number + 1
-      break if j >= @line.length
-      if pos.nil? && @line[j].nil?
-        @line[i] = max_number
-        @line[j] = max_number
-        # p @line
-        answer += solve(max_number - 1)
-        @line[i] = nil
-        @line[j] = nil
-      elsif pos.nil?
-        # 対象の場所に配置できる選手がいるか確認
-        # いなければこの空きパターンの答えは0
-        # p "possibility ******* >> #{@line}, #{pos}, #{@line[j]}"
-        impossible = true
-        (max_number - 1).downto(1) do |number|
-          k = i + number + 1
-          l = i - (number + 1)
-          break if k >= @line.length && l < 0
-          # p "possibility ******* >> number:#{number}, #{pos}, #{@line[k]}, #{@line[l]}"
-          if (k < @line.length && @line[k].nil?) || (l >= 0 && @line[l].nil?)
-            impossible = false
-            break
-          end
-        end
-        break if impossible
+    # 左から選手を埋めていく
+    (@players.length - 1).downto(0) do |player_i|
+      player = @players.slice! player_i
+      line_j = line_i + player + 1
+      
+      # 反対側の選手の位置が範囲を越えていた場合、以降の探索は中止
+      if line_j >= @line.length
+        @players.insert player_i, player
+        break
       end
+      
+      if @line[line_i].nil? && @line[line_j].nil?
+        @line[line_i] = player
+        @line[line_j] = player
+        # p @line
+        answer += solve @line.index nil
+        @line[line_i] = nil
+        @line[line_j] = nil
+      end
+
+      @players.insert(player_i, player)
     end
 
     # p "memoization ******* >> #{key}, #{answer}, #{@line}"
@@ -72,5 +66,5 @@ end
 players = STDIN.gets.chomp.to_i
 solver = Solver.new players
 # p 35584
-p solver.solve players
+p solver.solve 0
 p "cache hit ********* >> #{solver.total}, #{solver.hit}"
