@@ -10,7 +10,7 @@ class Solver
 
   def create_key
     pattern = @line.map{|pos| pos.nil? ? "0" : "*"}.join(":")
-    pattern = pattern.scan(/^((\*:)*)(.+?)((:\*)*)$/)[0][2]
+    # pattern = pattern.scan(/^((\*:)*)(.+?)((:\*)*)$/)[0][2]
     pattern
   end
 
@@ -34,10 +34,10 @@ class Solver
     return 1 if max_number == 0
     if @memo.include? key
       @hit += 1
-      p "cached answer ***** >> #{key}, #{@memo[key]}"
+      # p "cached answer ***** >> #{key}, #{@memo[key]}"
       return @memo[key] 
     end
-    p "uncached ********** >> #{key}"
+    # p "uncached ********** >> #{key}"
 
     # 探索
     answer = 0
@@ -76,15 +76,95 @@ class Solver
     end
 
     # p "memoization ******* >> #{key}, max_number:#{max_number}, answer:#{answer}, #{@line}" if max_number <= 3
+    p "memoization 0 ***** >> #{key}, max_number:#{max_number}, answer:#{answer}, #{@line}"
     @memo[key] = answer
     @memo[key_rev] = answer
+
+    if answer == 0
+      max_number.upto(@line.length / 2) do |number|
+      end
+    end
+
     answer
   end
 end
 
+class Solver_new
+  attr_accessor :hit, :total, :memo
+
+  def initialize players
+    @players = players
+    @line = Array.new players * 2
+    @memo = Hash.new
+    @hit = 0
+    @total = 0
+  end
+
+  def create_key
+    pattern = @line.map{|pos| pos.nil? ? "0" : "*"}.join(":")
+    pattern
+  end
+
+  def solve_rev max_number
+    return 1 if max_number == @players
+    answer = 0
+    @line.each_with_index do |pos, i|
+      j = i + max_number + 1
+      break if j >= @line.length
+      if !pos.nil? && !@line[j].nil?
+        tmp = @line[i]
+        @line[i] = nil
+        @line[j] = nil
+        key = create_key
+        # p "key *************** >> #{key}"
+        if @memo.include? key
+          answer += @memo[key]
+        else
+          @memo[key] = 0
+          @memo[key.reverse] = 0
+        end
+        @line[i] = tmp
+        @line[j] = tmp
+      end
+    end
+    # p "solve_rev_answer ** >> #{answer}"
+    answer
+  end
+
+  def solve next_player
+    @line.each_with_index do |pos, i|
+      j = i + next_player + 1
+      break if j >= @line.length
+      if pos.nil? && @line[j].nil?
+        @line[i] = next_player
+        @line[j] = next_player
+        key = create_key
+        # p "key *************** >> #{key}"
+        # p "#{key}, #{@memo[key]}" if (@memo.include? key)
+        # if !(@memo.include? key)
+          # p "line ************** >> #{@line}"
+          answer_tmp = solve_rev next_player
+          # p "answer ************ >> #{answer_tmp}"
+          @memo[key] = answer_tmp
+          @memo[key.reverse] = answer_tmp
+        # end
+        if next_player - 1 > 0
+          solve(next_player - 1)
+        end
+        @line[i] = nil
+        @line[j] = nil
+      end
+    end
+  end
+
+end
+
 players = STDIN.gets.chomp.to_i
-solver = Solver.new players
+solver = Solver_new.new players
 # p 35584
-p solver.solve players
+# p solver.solve players
+solver.solve players
+p solver.memo[("*:" * players * 2)[0..-2]]
 p "memo length ******* >> #{solver.memo.length}"
+p "memo 0 count ****** >> #{solver.memo.select{|key, val| val == 0}.length}"
 p "cache hit ********* >> #{solver.total}, #{solver.hit}"
