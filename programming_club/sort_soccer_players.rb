@@ -15,7 +15,7 @@ class Solver
     # メモ化のためのkey生成
     # 配列の空きパターンと残りの選手
     key = orders
-    key_rev = ((@fmt % orders.to_s(2)).reverse).to_i
+    # key_rev = ((@fmt % orders.to_s(2)).reverse).to_i
     # key_rev = key.reverse
     # p key
 
@@ -30,24 +30,28 @@ class Solver
     # 探索
     answer = 0
     mask = (1 << max_number + 1) + 1
-    0.upto(@players * 2 - 1).each do
+    limit = max_number == @players ? @players / 2 - 1 : @players * 2 - 1 
+    0.upto(limit).each do
       break if mask > @max_val
       if orders & mask == 0
-        answer += solve(orders | mask, max_number - 1)
+        answer_tmp = solve(orders | mask, max_number - 1)
+        answer_tmp += answer_tmp if max_number == @players && (@fmt % (orders | mask).to_s(2)).reverse.to_i(2) != mask
+        answer += answer_tmp
       end
       mask = mask << 1
     end
 
     # p "memoization 0 ***** >> #{key}, max_number:#{max_number}, answer:#{answer}, #{@line}"
     @memo[key] = answer
-    @memo[key_rev] = answer
+    # @memo[key_rev] = answer
 
     answer
   end
 end
 
-players = STDIN.gets.chomp.to_i
+# players = STDIN.gets.chomp.to_i
+players = 11
 solver = Solver.new players
 p solver.solve 0, players
-p "memo length ******* >> #{solver.memo.length}"
+# p "memo length ******* >> #{solver.memo.length}"
 # p "cache hit ********* >> #{solver.total}, #{solver.hit}"
