@@ -1,16 +1,107 @@
-def display_panel panel
-  panel.each do |line|
-    p line
+class Solver
+  attr_accessor :colored_panles
+
+  def initialize
+    @panels = Array.new(7) {Array.new(7) {0}}
+    @candidate_panels = (1..25).to_a
+    @colored_panles = Hash.new
+  end
+
+  def adjacent_put_panel? i, j
+    return false if @panels[i][j] != 0
+    return true if @panels[i - 1][j - 1] > 0
+    return true if @panels[i - 1][j] > 0
+    return true if @panels[i - 1][j + 1] > 0
+    return true if @panels[i][j - 1] > 0
+    return true if @panels[i][j + 1] > 0
+    return true if @panels[i + 1][j - 1] > 0
+    return true if @panels[i + 1][j] > 0
+    return true if @panels[i + 1][j + 1] > 0
+    false
+  end
+
+  def search_candidate_panels
+    candidate = []
+    @panels.each_with_index do |row, i|
+      row.each_with_index do |col, j|
+        candidate << ((i - 1) * 5 + j) if adjacent_put_panel? i, j
+        # p "#{i}, #{j}, #{adjacent_put_panel? i, j, panel}"
+      end
+    end
+    candidate
+  end
+
+  def initialize_panel
+    @panels.each_with_index do |row, i|
+      if i == 0 || i == 6
+        row.each_with_index do |col, j|
+          row[j] = -1
+        end
+      end
+      row[0] = -1
+      row[6] = -1
+    end
+
+    @colored_panles.each do |key, values|
+      values.each do |value|
+        row = value / 5 + 1
+        col = value % 5
+        @panels[row][col] = key.ord
+      end
+    end
+
+    @candidate_panels = search_candidate_panels
+  end
+
+  def display_panel
+    @panels.each do |line|
+      p line
+    end
+  end
+
+  def can_hold_between? color, row, col, horizonal, vertical
+    while @panels[row + horizonal][col + vertical] >= 0 do
+      return true if @panels[row + horizonal][col + vertical] == color.ord
+      row, col = row + horizonal, col + vertical
+    end
+    false
+  end
+
+  def puttable_panels color
+    return @candidate_panels if @colored_panles[color].length == 0
+
+    answer = []
+    @candidate_panels.each do |panel|
+      row = panel / 5 + 1
+      col = panel % 5
+      can_hold_between = false
+      can_hold_between = can_hold_between || can_hold_between?(color, row, col, -1, -1)
+      can_hold_between = can_hold_between || can_hold_between?(color, row, col, 0, -1)
+      can_hold_between = can_hold_between || can_hold_between?(color, row, col, 1, -1)
+      can_hold_between = can_hold_between || can_hold_between?(color, row, col, -1, 0)
+      can_hold_between = can_hold_between || can_hold_between?(color, row, col, 1, 0)
+      can_hold_between = can_hold_between || can_hold_between?(color, row, col, -1, 1)
+      can_hold_between = can_hold_between || can_hold_between?(color, row, col, 0, 1)
+      can_hold_between = can_hold_between || can_hold_between?(color, row, col, 1, 1)
+      answer << panel if can_hold_between
+    end
+    answer
+  end
+
+  def solve
+    p "candidate >> #{@candidate_panels}"
+    @colored_panles.each do |color, keep|
+      p "#{color}, #{puttable_panels color}"
+    end
   end
 end
 
-@panel = Array.new(7) {Array.new(7) {0}}
-
-input = Hash.new
+solver = Solver.new
 while line = STDIN.gets do
   tmp = line.chomp.split(",")
-  input[tmp[0]] = tmp[1..-1] 
+  solver.colored_panles[tmp[0]] = tmp[1..-1].map{|val| val.to_i}
 end
 
-p input
-display_panel @panel
+solver.initialize_panel
+solver.display_panel
+solver.solve
