@@ -20,7 +20,7 @@ class Solver
     false
   end
 
-  def search_candidate_panels
+  def search_candidate_panels 
     candidate = []
     @panels.each_with_index do |row, i|
       row.each_with_index do |col, j|
@@ -28,7 +28,7 @@ class Solver
         # p "#{i}, #{j}, #{adjacent_put_panel? i, j, panel}"
       end
     end
-    candidate
+    candidate.length > 0 ? candidate : [13]
   end
 
   def initialize_panel
@@ -44,8 +44,8 @@ class Solver
 
     @colored_panles.each do |key, values|
       values.each do |value|
-        row = value / 5 + 1
-        col = value % 5
+        row = (value - 1) / 5 + 1
+        col = value % 5 == 0 ? 5 : value % 5
         @panels[row][col] = key.ord
       end
     end
@@ -53,27 +53,29 @@ class Solver
     @candidate_panels = search_candidate_panels
   end
 
-  def display_panel
-    @panels.each do |line|
-      p line
-    end
-  end
-
   def can_hold_between? color, row, col, horizonal, vertical
+    meet_other_color = false
     while @panels[row + horizonal][col + vertical] >= 0 do
-      return true if @panels[row + horizonal][col + vertical] == color.ord
-      row, col = row + horizonal, col + vertical
+      return meet_other_color if @panels[row + horizonal][col + vertical] == color.ord
+      if @panels[row + horizonal][col + vertical] > 0
+        meet_other_color = true
+        row, col = row + horizonal, col + vertical
+      else
+        break
+      end
     end
     false
   end
 
   def puttable_panels color
-    return @candidate_panels if @colored_panles[color].length == 0
+    if color != 0
+      return puttable_panels 0 if @colored_panles[color].length == 0
+    end
 
     answer = []
     @candidate_panels.each do |panel|
-      row = panel / 5 + 1
-      col = panel % 5
+      row = (panel - 1) / 5 + 1
+      col = panel % 5 == 0 ? 5 : panel % 5
       can_hold_between = false
       can_hold_between = can_hold_between || can_hold_between?(color, row, col, -1, -1)
       can_hold_between = can_hold_between || can_hold_between?(color, row, col, 0, -1)
@@ -85,13 +87,19 @@ class Solver
       can_hold_between = can_hold_between || can_hold_between?(color, row, col, 1, 1)
       answer << panel if can_hold_between
     end
-    answer
+    answer.length > 0 ? answer : @candidate_panels
+  end
+
+  def display_panel
+    @panels.each do |line|
+      # p "%02d, %02d, %02d, %02d, %02d, %02d, %02d" % line
+    end
   end
 
   def solve
-    p "candidate >> #{@candidate_panels}"
+    # p "candidate >> #{@candidate_panels}"
     @colored_panles.each do |color, keep|
-      p "#{color}, #{puttable_panels color}"
+      puts "#{color},#{(puttable_panels color).join(",")}"
     end
   end
 end
