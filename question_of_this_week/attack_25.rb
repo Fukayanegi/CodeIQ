@@ -53,41 +53,42 @@ class Solver
     @candidate_panels = search_candidate_panels
   end
 
-  def can_hold_between? color, row, col, horizonal, vertical
+  def can_hold_between? color, row, col, horizonal, vertical, exclude = color
     meet_other_color = false
+    ret_val = false
     while @panels[row + horizonal][col + vertical] >= 0 do
       return meet_other_color if @panels[row + horizonal][col + vertical] == color.ord
-      if @panels[row + horizonal][col + vertical] > 0
+      if @panels[row + horizonal][col + vertical] > 0 && @panels[row + horizonal][col + vertical] != exclude.ord
         meet_other_color = true
         row, col = row + horizonal, col + vertical
       else
         break
       end
     end
-    false
+    ret_val
   end
 
-  def puttable_panels color
-    if color != 0
-      return puttable_panels 0 if @colored_panles[color].length == 0
-    end
-
+  def puttable_panels color, exclude = color
     answer = []
     @candidate_panels.each do |panel|
       row = (panel - 1) / 5 + 1
       col = panel % 5 == 0 ? 5 : panel % 5
       can_hold_between = false
-      can_hold_between = can_hold_between || can_hold_between?(color, row, col, -1, -1)
-      can_hold_between = can_hold_between || can_hold_between?(color, row, col, 0, -1)
-      can_hold_between = can_hold_between || can_hold_between?(color, row, col, 1, -1)
-      can_hold_between = can_hold_between || can_hold_between?(color, row, col, -1, 0)
-      can_hold_between = can_hold_between || can_hold_between?(color, row, col, 1, 0)
-      can_hold_between = can_hold_between || can_hold_between?(color, row, col, -1, 1)
-      can_hold_between = can_hold_between || can_hold_between?(color, row, col, 0, 1)
-      can_hold_between = can_hold_between || can_hold_between?(color, row, col, 1, 1)
+      can_hold_between = can_hold_between || can_hold_between?(color, row, col, -1, -1, exclude)
+      can_hold_between = can_hold_between || can_hold_between?(color, row, col, 0, -1, exclude)
+      can_hold_between = can_hold_between || can_hold_between?(color, row, col, 1, -1, exclude)
+      can_hold_between = can_hold_between || can_hold_between?(color, row, col, -1, 0, exclude)
+      can_hold_between = can_hold_between || can_hold_between?(color, row, col, 1, 0, exclude)
+      can_hold_between = can_hold_between || can_hold_between?(color, row, col, -1, 1, exclude)
+      can_hold_between = can_hold_between || can_hold_between?(color, row, col, 0, 1, exclude)
+      can_hold_between = can_hold_between || can_hold_between?(color, row, col, 1, 1, exclude)
       answer << panel if can_hold_between
     end
-    answer.length > 0 ? answer : @candidate_panels
+
+    answer = puttable_panels 0, color if answer.length == 0 && color != 0
+    answer = @candidate_panels if answer.length == 0
+
+    answer
   end
 
   def display_panel
