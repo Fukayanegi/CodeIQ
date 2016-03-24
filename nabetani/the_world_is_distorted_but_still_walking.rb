@@ -5,6 +5,7 @@
 # 上方向へ進む場合 : map[row][col] → map[row - 1][col + 0]
 DIRECTION = [[0,1],[1,0],[0,-1],[-1,0]]
 
+# デバッグ用
 def display world
   world.each do |row|
     p row.map {|col| col.value}
@@ -14,63 +15,94 @@ end
 class CellValue
   attr_accessor :value, :x, :y, :direction
   def initialize
-    @value = "*"
-    @x = 0
-    @y = 0
-    @direction = 0
+    @value = "!"
+    @x = 0          # 実体値のある相対x座標 
+    @y = 0          # 実体値のある相対y座標 
+    @direction = 0  # 実体値に移動した際の方向転換
   end
 end
 
-@world = Array.new(12) do |world_i|
-  Array.new(12) do |world_j|
-    tmp = CellValue.new
-    if world_i > 7 && world_j == 4
-      tmp.x = 7 - (11 - world_i)
-      tmp.y = -3 + 10 - world_i
-      tmp.direction = -1
-    elsif world_i == 8 && world_j > 7
-      tmp.x = -7 + 10 - world_j
-      tmp.y = 3 - (11 - world_j)
-      tmp.direction = 1
-      # p tmp
+class Solver
+  def initialize
+    create_world
+  end
+
+  def create_world
+    @world = Array.new(12) do |world_i|
+      Array.new(12) do |world_j|
+        tmp = CellValue.new
+        if world_i > 7 && world_j == 4
+          tmp.x = 7 - (11 - world_i)
+          tmp.y = -3 + 10 - world_i
+          tmp.direction = -1
+        elsif world_i == 8 && world_j > 7
+          tmp.x = -7 + 10 - world_j
+          tmp.y = 3 - (11 - world_j)
+          tmp.direction = 1
+          # p tmp
+        end
+        tmp
+      end
     end
-    tmp
+    values1 = ("0".."9").to_a
+    values1.concat ("a".."k").to_a
+    values1.each_with_index do |value, i|
+      row = i % 3 + 1
+      col = i / 3 + 1
+      @world[row][col].value = value
+    end
+    values2 = ("l".."z").to_a
+    values2.concat ("A".."F").to_a
+    values2.each_with_index do |value, i|
+      row = i / 3 + 1
+      col = 10 - i % 3
+      @world[row][col].value = value
+    end
+    values3 = ("G".."Z").to_a
+    values3.concat ["@"]
+    values3.each_with_index do |value, i|
+      row = 10 - i / 3
+      col = i % 3 + 1
+      @world[row][col].value = value
+    end
+  end
+
+  def progress start_pos, direction, step
+    row, col = start_pos
+    step.times do
+      cell_tmp = @world[row][col]
+      row, col = row + cell_tmp.y, col + cell_tmp.x
+      direction = direction += cell_tmp.direction
+      row, col = row + DIRECTION[direction][0], col + DIRECTION[direction][1]
+      cell = @world[row][col]
+      print cell.value
+      break if cell.value == "!"
+    end
+    [row, col]
+  end
+
+  def solve command, start_pos = [1, 1], start_direction = 0
+    pos = start_pos
+    direction = start_direction
+    print @world[pos[0]][pos[1]].value
+    command.each_char do |c|
+      if c == "R"
+        direction += 1
+      elsif c == "L"
+        direction -= 1
+      elsif
+        pos = progress(pos, direction, c.to_i)
+        break if @world[pos[0]][pos[1]].value == "!"
+      end
+    end
+    puts
   end
 end
-values1 = ("0".."9").to_a
-values1.concat ("a".."k").to_a
-values1.each_with_index do |value, i|
-  row = i % 3 + 1
-  col = i / 3 + 1
-  @world[row][col].value = value
-end
-values2 = ("l".."z").to_a
-values2.concat ("A".."F").to_a
-values2.each_with_index do |value, i|
-  row = i / 3 + 1
-  col = 10 - i % 3
-  @world[row][col].value = value
-end
-values3 = ("G".."Z").to_a
-values3.concat ["@"]
-values3.each_with_index do |value, i|
-  row = 10 - i / 3
-  col = i % 3 + 1
-  @world[row][col].value = value
-end
 
-def progress start_pos, direction, step
-  row, col = start_pos
-  step.times do
-    cell_tmp = @world[row][col]
-    row, col = row + cell_tmp.y, col + cell_tmp.x
-    direction = direction += cell_tmp.direction
-    cell = @world[row][col]
-    p cell.value
-    row, col = row + DIRECTION[direction][0], col   + DIRECTION[direction][1]
-  end
-  [row, col]
-end
-
-display @world
-p progress [8, 1], 0, 10
+# display @world
+command = STDIN.gets.chomp
+solver = Solver.new
+# solver.solve "1", [1, 1], 0
+# solver.solve "5R1R2L1"
+# solver.solve "3R2"
+solver.solve command
