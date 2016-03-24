@@ -59,19 +59,18 @@ values3.each_with_index do |value, i|
   @world[row][col].value = value
 end
 
-def progress world, step
-  direction = 1
-  row, col = 1, 8
+def progress start_pos, direction, step
+  row, col = start_pos
   step.times do
-    cell_tmp = world[row][col]
+    cell_tmp = @world[row][col]
     row, col = row + cell_tmp.y, col + cell_tmp.x
     direction = direction += cell_tmp.direction
-    cell = world[row][col]
+    cell = @world[row][col]
     p cell.value
     row, col = row + DIRECTION[direction][0], col   + DIRECTION[direction][1]
-    # p "#{row}, #{col}, #{direction}"
   end
+  [row, col]
 end
 
 display @world
-progress @world, 10
+p progress [8, 1], 0, 10
