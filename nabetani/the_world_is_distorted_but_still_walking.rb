@@ -1,3 +1,5 @@
+# FIXME: いろんな固定値をハードコードしている
+
 # 行*列の二次元配列のため、
 # 右方向へ進む場合 : map[row][col] → map[row + 0][col + 1]
 # 下方向へ進む場合 : map[row][col] → map[row + 1][col + 0]
@@ -32,6 +34,7 @@ class Solver
     @world = Array.new(12) do |world_i|
       Array.new(12) do |world_j|
         tmp = CellValue.new
+        # 奈落だけど、実体の値は相対的な位置にあること（歪んだ世界）を表現
         if world_i > 7 && world_j == 4
           tmp.x = 7 - (11 - world_i)
           tmp.y = -3 + 10 - world_i
@@ -45,6 +48,7 @@ class Solver
         tmp
       end
     end
+    # FIXME: 何かもっとうまい定義方法があるのでは
     values1 = ("0".."9").to_a
     values1.concat ("a".."k").to_a
     values1.each_with_index do |value, i|
