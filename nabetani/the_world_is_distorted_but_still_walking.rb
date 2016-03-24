@@ -5,13 +5,6 @@
 # 上方向へ進む場合 : map[row][col] → map[row - 1][col + 0]
 DIRECTION = [[0,1],[1,0],[0,-1],[-1,0]]
 
-# デバッグ用
-def display world
-  world.each do |row|
-    p row.map {|col| col.value}
-  end
-end
-
 class CellValue
   attr_accessor :value, :x, :y, :direction
   def initialize
@@ -23,8 +16,16 @@ class CellValue
 end
 
 class Solver
+  # デバッグ用
+  def display_world
+    @world.each do |row|
+      p row.map {|col| col.value}
+    end
+  end
+
   def initialize
     create_world
+    # display_world
   end
 
   def create_world
@@ -67,18 +68,25 @@ class Solver
     end
   end
 
+  def turn direction, turn
+      direction = direction += turn
+      direction = 3 if direction == -1
+      direction = 0 if direction == 4
+      direction
+  end
+
   def progress start_pos, direction, step
     row, col = start_pos
     step.times do
-      cell_tmp = @world[row][col]
-      row, col = row + cell_tmp.y, col + cell_tmp.x
-      direction = direction += cell_tmp.direction
       row, col = row + DIRECTION[direction][0], col + DIRECTION[direction][1]
+      cell_tmp = @world[row][col]
+      direction = turn direction, cell_tmp.direction
+      row, col = row + cell_tmp.y, col + cell_tmp.x
       cell = @world[row][col]
       print cell.value
       break if cell.value == "!"
     end
-    [row, col]
+    [[row, col], direction]
   end
 
   def solve command, start_pos = [1, 1], start_direction = 0
@@ -87,11 +95,12 @@ class Solver
     print @world[pos[0]][pos[1]].value
     command.each_char do |c|
       if c == "R"
-        direction += 1
+        direction = turn direction, 1
       elsif c == "L"
-        direction -= 1
+        direction = turn direction, -1
       elsif
-        pos = progress(pos, direction, c.to_i)
+        ret = progress(pos, direction, c.to_i)
+        pos, direction = ret
         break if @world[pos[0]][pos[1]].value == "!"
       end
     end
@@ -99,9 +108,9 @@ class Solver
   end
 end
 
-# display @world
 command = STDIN.gets.chomp
 solver = Solver.new
+# solver.solve "1R1", [9, 3], 0
 # solver.solve "1", [1, 1], 0
 # solver.solve "5R1R2L1"
 # solver.solve "3R2"
