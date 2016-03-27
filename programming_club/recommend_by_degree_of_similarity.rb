@@ -4,6 +4,26 @@ def display_matrix matrix
   end
 end
 
+def recommend_by_similarity item, matrix, c_user
+  similarity = Hash.new
+  matrix.each_with_index do |row, i|
+    if i != item - 1
+      denomi = 0
+      mole1 = 0
+      mole2 = 0
+      c_user.times do |col|
+        a = matrix[item - 1][col]
+        b = row[col]
+        denomi += a * b
+        mole1 += a ** 2
+        mole2 += b ** 2
+      end
+      similarity[i + 1] = denomi / (Math.sqrt(mole1) * Math.sqrt(mole2))
+    end
+  end
+  similarity.sort{|(k1, v1), (k2, v2)| v2 <=> v1}
+end
+
 input = STDIN.gets.chomp.split(" ").map{|val| val.to_i}
 c_user = input[0]
 c_item = input[1]
@@ -24,5 +44,6 @@ display_matrix matrix_rating_col
 c_recommend = STDIN.gets.chomp.to_i
 c_recommend.times do
   item = STDIN.gets.chomp.to_i
-  p matrix_rating_col[item - 1]
+  recommend = recommend_by_similarity item, matrix_rating_col, c_user
+  puts "#{item} #{recommend[0..2].map{|k, v| k}.join(" ")}"
 end
