@@ -19,3 +19,31 @@ board = Array.new(n + 3) do |i_row|
   end
 end
 display board
+
+@direction_x, @direction_y = 1, -1
+
+def move board, x, y
+  next_x, next_y = x + @direction_x, y + @direction_y
+
+  # 下へ反射
+  return next_x, next_y if board[next_y][next_x] > -1
+
+  if next_y == 0 || next_y == board.length - 1
+    @direction_y = @direction_y * -1
+    next_x, next_y = next_x, next_y + @direction_y * 2
+  end
+
+  if next_x == 0 || next_x == board[0].length - 1
+    @direction_x = @direction_x * -1
+    next_x, next_y = next_x + @direction_x * 2, next_y
+  end
+
+  # p "#{@direction_x}, #{@direction_y}"
+  return next_x, next_y
+end
+
+x, y = 2, 1
+8.times do
+  x, y = move board, x, y
+  p "#{x}, #{y}"
+end
