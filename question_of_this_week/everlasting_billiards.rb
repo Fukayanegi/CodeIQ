@@ -7,7 +7,6 @@ def display board
 end
 
 m, n = STDIN.gets.chomp.split(",").map{|v| v.to_i}
-# p "#{m}, #{n}"
 
 # 交点の配列
 # 一番側に範囲外=-1を設定
@@ -20,7 +19,7 @@ board = Array.new(n + 3) do |i_row|
     Array.new(m + 3) {-1}
   end
 end
-display board
+# display board
 
 @direction_x, @direction_y = 1, -1
 
@@ -53,15 +52,21 @@ end
 
 route = []
 passed = Set.new
-x, y = 2, 1
-while true do
-  p "#{x}, #{y}"
-  x_prev, y_prev = x, y
-  x, y = move board, x, y
-  key = "#{x_prev},#{y_prev}->#{x},#{y}"
-  break if route.include? key
-  route << key
-  passed << panel(x_prev, y_prev, x, y)
+tiles = []
+(1..m).each do |x_start|
+  (1..n).each do |y_start|
+    x, y = x_start, y_start
+    while true do
+      # p "#{x}, #{y}"
+      x_prev, y_prev = x, y
+      x, y = move board, x, y
+      key = "#{x_prev},#{y_prev}->#{x},#{y}"
+      break if route.include? key
+      route << key
+      passed << panel(x_prev, y_prev, x, y)
+    end
+    tiles << passed.length 
+  end
 end
 
-p passed
+p tiles.min, tiles.max
