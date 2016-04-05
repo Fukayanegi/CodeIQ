@@ -1,3 +1,5 @@
+require 'set'
+
 def display board
   board.each do |row|
     p row.map{|c| "%3s" % c}.join(",")
@@ -25,7 +27,7 @@ display board
 def move board, x, y
   next_x, next_y = x + @direction_x, y + @direction_y
 
-  # 下へ反射
+  # 上下へ反射
   return next_x, next_y if board[next_y][next_x] > -1
 
   if next_y == 0 || next_y == board.length - 1
@@ -33,6 +35,7 @@ def move board, x, y
     next_x, next_y = next_x, next_y + @direction_y * 2
   end
 
+  # 左右へ反射
   if next_x == 0 || next_x == board[0].length - 1
     @direction_x = @direction_x * -1
     next_x, next_y = next_x + @direction_x * 2, next_y
@@ -42,8 +45,23 @@ def move board, x, y
   return next_x, next_y
 end
 
-x, y = 2, 1
-8.times do
-  x, y = move board, x, y
-  p "#{x}, #{y}"
+def panel x_prev, y_prev, x, y
+  panel_x = x_prev < x ? x_prev : x
+  pnael_y = y_prev < y ? y_prev : y
+  [panel_x, pnael_y]
 end
+
+route = []
+passed = Set.new
+x, y = 2, 1
+while true do
+  p "#{x}, #{y}"
+  x_prev, y_prev = x, y
+  x, y = move board, x, y
+  key = "#{x_prev},#{y_prev}->#{x},#{y}"
+  break if route.include? key
+  route << key
+  passed << panel(x_prev, y_prev, x, y)
+end
+
+p passed
