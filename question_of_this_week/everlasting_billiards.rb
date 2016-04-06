@@ -53,11 +53,11 @@ class Solver
   end
 
   def solve
-    route = []
-    passed = Set.new
     tiles = []
     (1..@m).each do |x_start|
       (1..@n).each do |y_start|
+        route = []
+        passed = Set.new
         x, y = x_start, y_start
         while true do
           # p "#{x}, #{y}"
