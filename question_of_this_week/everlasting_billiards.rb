@@ -14,6 +14,7 @@ class Solver
   end
 
   def initialize m, n
+    @memo = Hash.new
     @m, @n = m, n
     @direction_x, @direction_y = 1, -1
 
@@ -59,16 +60,22 @@ class Solver
         route = []
         passed = Set.new
         x, y = x_start, y_start
+        returned_flg = false
         while true do
           # p "#{x}, #{y}"
           x_prev, y_prev = x, y
           x, y = move x, y
-          key = "#{x_prev},#{y_prev}->#{x},#{y}"
-          break if route.include? key
-          route << key
+          path = "#{x_prev},#{y_prev}->#{x},#{y}"
+          break if @memo.include? path
+          if route.include? path
+            returned_flg = true
+            break
+          end
+          route << path
           passed << Solver.panel(x_prev, y_prev, x, y)
         end
-        tiles << passed.length 
+        route.each {|key| @memo[key] = passed.length}
+        tiles << passed.length if returned_flg == true
       end
     end
 
