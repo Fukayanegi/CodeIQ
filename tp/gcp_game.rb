@@ -2,7 +2,7 @@ a = 0
 b = 0
 
 def judge a, b, hand_a, hand_b
-  p "#{a}, #{b}, #{hand_a}, #{hand_b}"
+  # p "#{a}, #{b}, #{hand_a}, #{hand_b}"
   return [0,3] if hand_a == "C" && hand_b == "G"
   return [0,6] if hand_a == "P" && hand_b == "C"
   return [0,6] if hand_a == "G" && hand_b == "P"
