@@ -15,8 +15,8 @@ def judge a, b, hand_a, hand_b
 end
 
 def print_result a, b
-  puts "a,#{a}" if a > b
-  puts "b,#{b}" if a < b
+  puts "A,#{a-b}" if a > b
+  puts "B,#{b-a}" if a < b
   puts "even" if a == b
 end
 
