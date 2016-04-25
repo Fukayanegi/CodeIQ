@@ -17,7 +17,7 @@ n.times do
 end
 map << ("X" * (n + 2)).each_char.to_a
 
-display_map map
+# display_map map
 
 def move pos, sym_direction
   direction = DIRECTION[sym_direction]
