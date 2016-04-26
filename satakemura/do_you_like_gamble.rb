@@ -1,4 +1,5 @@
 N = STDIN.gets.chomp.to_i
+NUM_OF_TRIES = 10000
 
 class Solver
   def initialize n
@@ -24,7 +25,7 @@ class Solver
         # p "#{limit}-#{try}: #{money}"
         e += (money - e) / (try + 1).to_f
       end
-      p "#{limit}: #{e}"
+      # p "#{limit}: #{e}"
       es[limit] = e
     end
 
@@ -34,4 +35,4 @@ class Solver
 end
 
 solver = Solver.new N
-solver.solve 1000
+solver.solve NUM_OF_TRIES
