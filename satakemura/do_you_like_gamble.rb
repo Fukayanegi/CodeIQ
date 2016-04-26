@@ -11,12 +11,21 @@ class Solver
 
   def solve tries
     (1..@n).each do |limit|
-      tries.times do
-        p "#{limit}: #{next_number}"
+      e = 0
+      tries.times do |try|
+        money = 0
+        while (num = next_number) < limit do
+          money -= 1
+          # p "  #{limit}: #{num}"
+        end
+        money += num
+        # p "#{limit}-#{try}: #{money}"
+        e += money / (try + 1).to_f
       end
+      p "#{limit}: #{e}"
     end
   end
 end
 
 solver = Solver.new N
-solver.solve 3
+solver.solve 10
