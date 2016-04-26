@@ -10,6 +10,8 @@ class Solver
   end
 
   def solve tries
+    es = Hash.new
+
     (1..@n).each do |limit|
       e = 0
       tries.times do |try|
@@ -23,9 +25,13 @@ class Solver
         e += (money - e) / (try + 1).to_f
       end
       p "#{limit}: #{e}"
+      es[limit] = e
     end
+
+    p es.sort{|(k1, v1),(k2, v2)| v2 <=> v1 }[0][0]
   end
+
 end
 
 solver = Solver.new N
-solver.solve 10
+solver.solve 1000
