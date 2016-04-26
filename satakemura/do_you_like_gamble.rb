@@ -20,7 +20,7 @@ class Solver
         end
         money += num
         # p "#{limit}-#{try}: #{money}"
-        e += money / (try + 1).to_f
+        e += (money - e) / (try + 1).to_f
       end
       p "#{limit}: #{e}"
     end
