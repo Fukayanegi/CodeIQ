@@ -3,9 +3,10 @@ require 'scanf'
 circles = STDIN.gets.chomp.split(" ").map{|p_circle| p_circle.split("/")}
 
 def judge r1, r2, distance
+  # p "#{r1}, #{r2}, #{distance}"
   return "A" if r1 == r2 && distance == 0
   return "C" if r1 + distance == r2 || r2 + distance == r1
-  return "B" if distance < r1 || distance < r2
+  return "B" if distance + r2 < r1 || distance + r1 < r2
   return "D" if distance < r1 + r2
   return "E" if distance == r1 + r2
   return "F" if distance > r1 + r2
