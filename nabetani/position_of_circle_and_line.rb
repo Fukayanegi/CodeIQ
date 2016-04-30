@@ -36,7 +36,7 @@ postions.each do |pair|
 
   inclination1 = (line[3] - line[1]) / (line[2] - line[0]).to_f
 
-  if inclination1 > 0 || inclination1 < 0
+  if inclination1 != 0 && inclination1 != Float::INFINITY
     intercept1 = line[1] - inclination1 * line[0]
     inclination2 = 1 / inclination1
     intercept2 = circle[1] - inclination2 * circle[0]
@@ -44,7 +44,7 @@ postions.each do |pair|
     y = inclination2 * x + intercept2
     y_tmp = inclination1 * x + intercept1
   else
-    if inclination1 == 0
+    if inclination1 == Float::INFINITY
       x = line[0]
       y = circle[1]
       y_tmp = y
