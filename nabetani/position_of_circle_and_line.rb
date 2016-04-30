@@ -34,7 +34,7 @@ postions.each do |pair|
   inclination1, inclination2 = 0, 0
   intercept1, intercept2 = 0, 0
 
-  inclination1 = (line[2] - line[0]) / (line[3] - line[1]).to_f
+  inclination1 = (line[3] - line[1]) / (line[2] - line[0]).to_f
 
   if inclination1 > 0 || inclination1 < 0
     intercept1 = line[1] - inclination1 * line[0]
