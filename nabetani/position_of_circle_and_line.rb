@@ -12,7 +12,7 @@ def judge r, d1, d2, d3
   # このstepに到達する時点で d1 > r || d2 > r
   if d1 == r || d2 == r 
     #TODO: DとGの判別
-    return "D" if d3 == 0
+    return "D" if d3 < r
     return "G"
   end
 
@@ -57,9 +57,9 @@ postions.each do |pair|
 
   distance3 = Math.sqrt((x - circle[0])**2 + (y - circle[1])**2)
 
-  # p "#{inclination1}, #{intercept1}, #{inclination2}, #{intercept2}"
-  # p "#{x}, #{y}, #{y_tmp}"
-  # p "#{distance1}, #{distance2}, #{distance3}"
+    p "#{inclination1}, #{intercept1}, #{inclination2}, #{intercept2}"
+    p "#{x}, #{y}, #{y_tmp}"
+    p "#{distance1}, #{distance2}, #{distance3}"
 
   answer << judge(circle[2], distance1, distance2, distance3)
 end
