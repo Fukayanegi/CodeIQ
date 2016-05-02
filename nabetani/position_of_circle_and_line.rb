@@ -12,14 +12,14 @@ def judge r, d1, d2, d3, d3_on_the_line
   # このstepに到達する時点で d1 > r || d2 > r
   if d1 == r || d2 == r 
     #TODO: DとGの判別
-    return "D" if (d3 < r) && d3_on_the_line
+    return "D" if d3 < r && d3_on_the_line
     return "G"
   end
 
   return "F" if d1 < r || d2 < r 
 
   # このstepに到達する時点で d1 > r && d2 > r
-  return "E" if d3 < r
+  return "E" if d3 < r && d3_on_the_line
   return "H" if d3 == r
   return "I"
 end
@@ -34,9 +34,9 @@ postions.each do |pair|
   inclination1, inclination2 = 0, 0
   intercept1, intercept2 = 0, 0
 
-  inclination1 = (line[3] - line[1]) / (line[2] - line[0]).to_f
+  inclination1 = line[2] - line[0] == 0 ? 0 : Rational(line[3] - line[1], line[2] - line[0])
 
-  if inclination1 != 0 && inclination1.abs != Float::INFINITY
+  if inclination1.to_f != 0
     intercept1 = line[1] - inclination1 * line[0]
     inclination2 = -1 * 1 / inclination1
     intercept2 = circle[1] - inclination2 * circle[0]
@@ -44,7 +44,7 @@ postions.each do |pair|
     y = inclination2 * x + intercept2
     y_tmp = inclination1 * x + intercept1
   else
-    if inclination1.abs == Float::INFINITY
+    if line[2] - line[0] == 0
       x = line[0]
       y = circle[1]
       y_tmp = y
