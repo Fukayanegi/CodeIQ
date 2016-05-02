@@ -2,7 +2,7 @@ require 'scanf'
 
 postions = STDIN.gets.chomp.split(" ").map{|pair| pair.split("/")}
 
-def judge r, d1, d2, d3
+def judge r, d1, d2, d3, d3_on_the_line
   if d1 <= r && d2 <= r
     return "C" if d1 == r && d2 == r
     return "B" if d1 == r || d2 == r
@@ -12,7 +12,7 @@ def judge r, d1, d2, d3
   # このstepに到達する時点で d1 > r || d2 > r
   if d1 == r || d2 == r 
     #TODO: DとGの判別
-    return "D" if d3 < r
+    return "D" if (d3 < r) && d3_on_the_line
     return "G"
   end
 
@@ -38,7 +38,7 @@ postions.each do |pair|
 
   if inclination1 != 0 && inclination1 != Float::INFINITY
     intercept1 = line[1] - inclination1 * line[0]
-    inclination2 = 1 / inclination1
+    inclination2 = -1 * 1 / inclination1
     intercept2 = circle[1] - inclination2 * circle[0]
     x = (intercept2 - intercept1) / (inclination1 - inclination2)
     y = inclination2 * x + intercept2
@@ -56,12 +56,13 @@ postions.each do |pair|
   end
 
   distance3 = Math.sqrt((x - circle[0])**2 + (y - circle[1])**2)
+  on_the_line = (x >= line[0] && x <= line[2]) || (x <= line[0] && x >= line[2])
 
-    p "#{inclination1}, #{intercept1}, #{inclination2}, #{intercept2}"
-    p "#{x}, #{y}, #{y_tmp}"
-    p "#{distance1}, #{distance2}, #{distance3}"
+    # p "#{inclination1}, #{intercept1}, #{inclination2}, #{intercept2}"
+    # p "#{x}, #{y}, #{y_tmp}"
+    # p "#{distance1}, #{distance2}, #{distance3}"
 
-  answer << judge(circle[2], distance1, distance2, distance3)
+  answer << judge(circle[2], distance1, distance2, distance3, on_the_line)
 end
 
 puts answer.join
