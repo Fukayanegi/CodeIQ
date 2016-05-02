@@ -36,7 +36,7 @@ postions.each do |pair|
 
   inclination1 = (line[3] - line[1]) / (line[2] - line[0]).to_f
 
-  if inclination1 != 0 && inclination1 != Float::INFINITY
+  if inclination1 != 0 && inclination1.abs != Float::INFINITY
     intercept1 = line[1] - inclination1 * line[0]
     inclination2 = -1 * 1 / inclination1
     intercept2 = circle[1] - inclination2 * circle[0]
@@ -44,7 +44,7 @@ postions.each do |pair|
     y = inclination2 * x + intercept2
     y_tmp = inclination1 * x + intercept1
   else
-    if inclination1 == Float::INFINITY
+    if inclination1.abs == Float::INFINITY
       x = line[0]
       y = circle[1]
       y_tmp = y
@@ -58,9 +58,9 @@ postions.each do |pair|
   distance3 = Math.sqrt((x - circle[0])**2 + (y - circle[1])**2)
   on_the_line = (x >= line[0] && x <= line[2]) || (x <= line[0] && x >= line[2])
 
-    # p "#{inclination1}, #{intercept1}, #{inclination2}, #{intercept2}"
-    # p "#{x}, #{y}, #{y_tmp}"
-    # p "#{distance1}, #{distance2}, #{distance3}"
+  # p "#{inclination1}, #{intercept1}, #{inclination2}, #{intercept2}"
+  # p "#{x}, #{y}, #{y_tmp}"
+  # p "#{distance1}, #{distance2}, #{distance3}"
 
   answer << judge(circle[2], distance1, distance2, distance3, on_the_line)
 end
