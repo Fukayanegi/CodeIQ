@@ -1,23 +1,31 @@
 n = STDIN.gets.chomp.to_i
 
-def solve n
-  # p "called solve #{n}"
-
-  return 0.5 if n == 0
-
+def calc_power_num n
   i = 1
   while 2**i < n
     i += 1
   end
 
+  return i
+end
+
+def solve n
+  # p "called solve #{n}"
+  # sleep 1
+
+  return 0.5 if n == 0
+  return 1 if n == 1
+  i = calc_power_num n
+
   is_even = n.even?
   rest = n - 2**(i-1)
-  vertex = solve (is_even ? rest - 1 : rest)
+  vertex = solve (is_even ? rest : rest - 1)
 
-  # p "#{i}, #{2**(i-1)}, #{is_even}, #{vertex}"
+  # p "#{n}, #{i}, #{2**(i-1)}, #{is_even}, #{vertex}"
 
   return 1 if n == 2**i
-  return 2 * vertex
+  return 2 * vertex if is_even
+  return 2 * 2 * vertex
 end
 
 answer = 2 * (solve n)
