@@ -31,7 +31,7 @@ end
 
 def filter direction
   f = 11 if direction == [-1, 0]
-  f = 9 if direction == [0, 1]
+  f = 7 if direction == [0, 1]
   f = 14 if direction == [1, 0]
   f = 13 if direction == [0, -1]
   f
@@ -54,12 +54,24 @@ def block_to direction
 end
 
 def record_path_and_move pos, direction, n, passed
+  if passed == 0
+    g_from_x = (n.even? && direction == [1, 0]) || (n.odd? && direction == [0, 1]) ? [ROW, COL-1] : [ROW-1, COL]
+    g_direction_x = (n.even? && direction == [1, 0]) || (n.odd? && direction == [0, 1]) ? [0, 1] : [1, 0]
+    @vertex[g_from_x[0]][g_from_x[1]] = @vertex[g_from_x[0]][g_from_x[1]] | block_from(g_direction_x)
+    @vertex[ROW][COL] = @vertex[ROW][COL] | block_to(g_direction_x)
+    # p g_from_x
+    # p g_direction_x
+  end
+  # p @vertex if passed == 0
   @calls += 1
   pos_next = [pos[0] + direction[0], pos[1] + direction[1]]
 
   # p "#{pos}, #{pos_next}, #{direction}, #{n}" if pos == [3, 3] && direction == [0, 1]
   # p "#{pos}, #{pos_next}, #{direction}, #{n}, #{@path}" if pos_next == GOAL && n == 0
-  # p "#{pos}, #{pos_next}, #{direction}, #{n}, #{@path}" if pos == [1,2] && pos_next == [1,3] && n == 16
+  # p "#{pos}, #{pos_next}, #{direction}, #{n}, #{@path}" if pos == [3,2] && pos_next == [3,3] && n == 3
+  # p @vertex if pos == [3,2] && pos_next == [3,3] && n == 3
+  # p @vertex[pos_next[0]][pos_next[1]] if pos == [3,2] && pos_next == [3,3] && n == 3
+  # p filter(direction) if pos == [3,2] && pos_next == [3,3] && n == 3
 
   return 0 if n < 0 && pos_next != GOAL
   return 0 if pos_next[0] < 0 || pos_next[1] < 0
@@ -89,6 +101,12 @@ def record_path_and_move pos, direction, n, passed
     @vertex[k[0]][k[1]] = @vertex[k[0]][k[1]] & (15 - v)
   end
 
+  if passed == 0
+    g_from_x = (n.even? && direction == [1, 0]) || (n.odd? && direction == [0, 1]) ? [ROW, COL-1] : [ROW-1, COL]
+    g_direction_x = (n.even? && direction == [1, 0]) || (n.odd? && direction == [0, 1]) ? [0, 1] : [1, 0]
+    @vertex[g_from_x[0]][g_from_x[1]] = @vertex[g_from_x[0]][g_from_x[1]] & (15 - block_from(g_direction_x))
+    @vertex[ROW][COL] = @vertex[ROW][COL] & (15 - block_to(g_direction_x))
+  end
   answer
 end
 
@@ -108,14 +126,14 @@ end
 # p "*"*40
 answer1, answer2 = 0, 0
 # パフォーマンス未解決
-if n == 21
-  puts 6
-elsif n == 22
-  puts 33
-else
+# if n == 21
+#   puts 6
+# elsif n == 22
+#   puts 40
+# else
   answer1 = record_path_and_move [0,0], [0,1], n, 0
   answer2 = record_path_and_move [0,0], [1,0], n, 0
   puts answer1 + answer2
   # puts "answer1: #{answer1}, answer2: #{answer2}"
-  # puts @calls
-end
+  puts @calls
+# end
