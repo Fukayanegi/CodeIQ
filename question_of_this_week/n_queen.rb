@@ -63,9 +63,30 @@ def nq n, mask, map, queens
   return ret
 end
 
-answer = nq @n**2-1, 0, 0, @n
-answer.each do |map|
-  show_map map, @n
-  p "*"*20
-end
-p answer.length
+maps = nq @n**2-1, 0, 0, @n
+# maps.each do |map|
+#   show_map map, @n
+#   p "*"*20
+# end
+
+answer = 0
+
+# if @n == 7
+#   # パフォーマンス未解決
+#   puts 7
+# else
+  1.upto(maps.length).each do |num|
+    maps.to_a.combination(num).each do |comb|
+      answer = num if "%0#{@n**2}b" % comb.inject(0) {|acm, map| acm ^ map} == "1"*@n**2
+      if answer > 0
+        comb.each do |map|
+          p "%0#{@n**2}b" % map
+        end
+      end
+      break if answer > 0
+    end
+    break if answer > 0
+  end
+
+  puts answer
+# end
