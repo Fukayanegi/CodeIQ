@@ -11,6 +11,7 @@ def show_map n, width
   end
 end
 
+# posを起点にクイーンの進む方向にビットマップnをブロックする関数
 def block n, pos
   r = (pos / @n - @n + 1).abs
   c = (pos % @n - @n + 1).abs
@@ -37,7 +38,9 @@ def block n, pos
   n
 end
 
-def nq n, mask, map, queens
+# nクイーンの解を求める
+# [0,0]から[n,n]まで置ける位置にクイーンを再帰的に配置する関数
+def solve digits, mask, map, queens
   ret = Set.new
 
   if queens == 0
@@ -45,7 +48,7 @@ def nq n, mask, map, queens
     return ret
   end
 
-  n.downto(0) do |digit|
+  digits.downto(0) do |digit|
     mask_next = mask
     map_next = map
     if (1 << digit) & mask == 0
@@ -56,37 +59,62 @@ def nq n, mask, map, queens
       # p "*"*20
       # show_map map_next, @n
       # p "*"*20
-      ret.merge(nq n, mask_next, map_next, queens-1)
+      ret.merge(solve digits, mask_next, map_next, queens-1)
     end
     mask |= 1 << digit
   end
   return ret
 end
 
-maps = nq @n**2-1, 0, 0, @n
+maps = solve @n**2-1, 0, 0, @n
 # maps.each do |map|
 #   show_map map, @n
 #   p "*"*20
 # end
+maps_h = maps.inject(Hash.new) do |h, map|
+  key = ("%0#{@n**2}b" % map)[0..@n-1]
+  h[key] = [] if !h.include? key
+  tmp = h[key]
+  tmp << map
+  h
+end
+# p maps_h
 
 answer = 0
+full = ("1"*@n**2).to_i(2)
 
-# if @n == 7
-#   # パフォーマンス未解決
-#   puts 7
-# else
-  1.upto(maps.length).each do |num|
+# maps.to_a.each {|map| p "%0#{@n**2}b" % map}
+
+def fill? map, hash
+  return true if hash.length == 0
+  k, ary = hash.shift
+  # ary.each{|v| p "%0#{@n**2}b" % v}
+  ary.each do |a|
+    map_next = map
+    return true if fill?(map_next^a, hash) if (map_next &= a) == 0
+  end
+  false
+end
+
+# 探索
+# n*nの盤面にn個のqueenを置いているため、n面以上重ねないと全てが埋まらない
+@n.upto(maps.length).each do |num|
+
+  if num == @n
+    # num == @n の場合は高速化可能
+    answer = @n if fill?(0, maps_h)
+  else
+    # num != @n の場合の高速化は課題
     maps.to_a.combination(num).each do |comb|
-      answer = num if "%0#{@n**2}b" % comb.inject(0) {|acm, map| acm ^ map} == "1"*@n**2
-      if answer > 0
-        comb.each do |map|
-          p "%0#{@n**2}b" % map
-        end
+      layered = comb.inject(0) {|acm, map| acm ^ map}
+      if layered == full
+        answer = num
+        break
       end
-      break if answer > 0
     end
-    break if answer > 0
   end
 
-  puts answer
-# end
+  break if answer > 0
+end
+
+puts answer
