@@ -29,7 +29,7 @@ end
 # カードの組み合わせを考える
 patterns = []
 (2..cards).each do |num_of_cards|
-  patterns.concat status.keys.repeated_combination(num_of_cards).select{|comb| comb.inject(:+) < costs}
+  patterns.concat status.keys.repeated_combination(num_of_cards).select{|comb| comb.inject(:+) <= costs}
 end
 # p patterns
 
