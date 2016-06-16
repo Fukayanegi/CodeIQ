@@ -65,4 +65,5 @@ children.each do |child|
   end
 end
 
-p tree.values.inject{|prev, this| prev & this}.max
+common_ancestor = tree.values.inject{|prev, this| prev & this}
+puts common_ancestor.length == 0 ? "-" : common_ancestor.max
