@@ -7,7 +7,7 @@ answer = "-"
 
   # p "#{num}, #{num**m}, #{pattern_of_num}, #{pattern_of_num_of_power}"
 
-  next if pattern_of_num.length != pattern_of_num.length
+  next if num.to_s.length != pattern_of_num.length
 
   if pattern_of_num & pattern_of_num_of_power == []
     answer = num
