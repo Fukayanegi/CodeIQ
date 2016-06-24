@@ -23,10 +23,8 @@ end
 answer = 0
 1.upto n do |denominator|
   if judge_all_finite_decimal denominator
-    # p "#{denominator}, #{n}"
-    answer += n 
+    answer += n
   else
-    # p "#{denominator}, #{n / (calc_factor_excepting_25 denominator)}"
     answer += n / (calc_factor_excepting_25 denominator)
   end
 end
