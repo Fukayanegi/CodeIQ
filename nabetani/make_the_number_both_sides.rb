@@ -30,5 +30,5 @@ else
   # p abs.values.min
 
   min = abs.values.min
-  puts abs.select{|key, value| key if value == min}.keys.join(",")
+  puts abs.select{|key, value| key if value == min}.keys.sort.join(",")
 end
