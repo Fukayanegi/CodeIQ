@@ -19,8 +19,8 @@ else
       back = (target - key.join.to_i).abs
       
       side = table < back ? 0 : 1
-      side = 1 if num[i_card][0] == 0
-      side = 0 if num[i_card][1] == 0
+      side = 1 if num[i_card][0] == 0 && num_of_cards == 0
+      side = 0 if num[i_card][1] == 0 && num_of_cards == 0
       key[i_card] = num[i_card][side]
       sides[i_card] = side
     end
