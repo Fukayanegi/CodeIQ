@@ -5,13 +5,12 @@ cards = input[2].split("/").map{|pair| pair.each_char.to_a.map{|num| num.to_i}}
 
 # p "#{num_of_cards}, #{target}, #{cards}"
 
-if cards.select{|v| v[0] || v[1]}.length == 0
+if cards.select{|v| v[0] != 0 || v[1] != 0}.length == 0
   puts "-"
 else
   pattern = cards.permutation(num_of_cards)
   abs = pattern.inject({}) do |h, num|
     key = Array.new(num_of_cards){0}
-    sides = Array.new(num_of_cards){0}
     num_of_cards.times do |i_card|
       key[i_card] = num[i_card][0]
       table = (target - key.join.to_i).abs
@@ -19,10 +18,9 @@ else
       back = (target - key.join.to_i).abs
       
       side = table < back ? 0 : 1
-      side = 1 if num[i_card][0] == 0 && num_of_cards == 0
-      side = 0 if num[i_card][1] == 0 && num_of_cards == 0
+      side = 1 if num[i_card][0] == 0 && num_of_cards > 1 && i_card == 0
+      side = 0 if num[i_card][1] == 0 && num_of_cards > 1 && i_card == 0
       key[i_card] = num[i_card][side]
-      sides[i_card] = side
     end
 
     num_abs_min = key.join.to_i
