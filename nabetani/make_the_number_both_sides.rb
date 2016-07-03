@@ -9,7 +9,8 @@ if cards.select{|v| v[0] != 0 || v[1] != 0}.length == 0
   puts "-"
 else
   perm = cards.permutation(num_of_cards)
-  tmp_num_abs_min = ("9"*num_of_cards).to_i
+  len = target.to_s.length > num_of_cards ? target.to_s.length : num_of_cards
+  tmp_num_abs_min = ("9"*len).to_i
 
   abs = perm.inject({}) do |h, num|
     flg = false
@@ -26,6 +27,7 @@ else
       digit = 10 ** (num_of_cards - 1 - i_card)
       adjust = target % digit
       # p "#{digit}, #{num[i_card]}"
+      # sleep 1
       if num[i_card][0] == 0 && num_of_cards > 1 && i_card == 0
         side = 1
         back = num[i_card][side] * digit + adjust
@@ -43,10 +45,12 @@ else
       end
 
       tmp_num = (side == 0) ? table - adjust : back - adjust
-      tmp_num_abs = (side == 0) ? table_abs : back_abs
+      tmp_num_abs = (side == 0) ? table_abs + adjust : back_abs + adjust
       # p "#{tmp_num}, #{tmp_num_abs}, #{i_card}, #{table}, #{back}"
+      # sleep 1
 
       if tmp_num_abs > tmp_num_abs_min
+        # p "#{tmp_num_abs}, #{tmp_num_abs_min}"
         flg = true
         break
       end
