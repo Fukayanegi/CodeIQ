@@ -12,6 +12,8 @@ else
   len = target.to_s.length > num_of_cards ? target.to_s.length : num_of_cards
   tmp_num_abs_min = ("9"*len).to_i
 
+  # たたみ込みで、不完全な解を一時ハッシュに溜め込む
+  # To Fix: たたみ込みで、不完全な解を一時ハッシュに溜め込むってアルゴリズムとしてどうなの
   abs = perm.inject({}) do |h, num|
     flg = false
     tmp_num, tmp_num_abs = 0, target
@@ -25,9 +27,14 @@ else
 
       side = -1
       digit = 10 ** (num_of_cards - 1 - i_card)
+      # 途中結果の誤差の絶対値が最小となるよう調整
+      # target = 2282, num[i_card] = 1/3の場合、この調整がないと
+      # target - 1000 = 1282, target - 3000 = 718
+      # となり解が 1283とかだった場合に求められない
       adjust = target % digit
       # p "#{digit}, #{num[i_card]}"
       # sleep 1
+      
       if num[i_card][0] == 0 && num_of_cards > 1 && i_card == 0
         side = 1
         back = num[i_card][side] * digit + adjust
