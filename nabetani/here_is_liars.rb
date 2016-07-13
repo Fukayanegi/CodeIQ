@@ -1,9 +1,11 @@
+# 入力値の処理
 talks = STDIN.gets.chomp.split(",").map do |talk|
   t = talk.scan(/(.*):(.*)(\d)/)[0]
   [t[0], t[1].each_char.to_a, t[2].to_i]
 end
 kyura_max = talks.each.inject(0){|acc, talk| acc = talk[2] if acc < talk[2]; acc}
 persons = talks.map{|talk| talk[0]}
+# p persons
 
 answer = []
 (0..kyura_max).each do |kyuras_num|
@@ -28,6 +30,6 @@ if answer.length == 0
 elsif answer.length > 1
   puts "many"
 else
-  k = answer[0].join
+  k = answer[0].sort.join
   puts k == "" ? "-" : k
 end
