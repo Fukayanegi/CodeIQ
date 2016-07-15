@@ -7,7 +7,9 @@ def solve num, coins
   patterns = 0
   (num / coin + 1).times do |i|
     patterns += solve num - coin * i, coins
+    # p "#{coin}, #{i}, #{patterns}"
   end
+  coins.unshift coin
   patterns
 end
 
