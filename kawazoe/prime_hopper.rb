@@ -1,5 +1,6 @@
 @primes = []
 def prime? num
+  return false if num == 1
   return true if @primes.include? num
   prime = true
   (2..num/2).each do |denomi|
@@ -30,13 +31,17 @@ def convert_2 num
 end
 
 p, q = STDIN.gets.chomp.split(" ").map{|v| v.to_i}
+# p "#{p}, #{q}"
 
 @loop_chek = {}
 def solve p, q, num_convert
   return nil if (@loop_chek.include? p) && (@loop_chek[p] <= num_convert)
   @loop_chek[p] = num_convert
 
-  return num_convert if p == q
+  if p == q
+    p p if num_convert == 6
+    return num_convert
+  end
 
   answers = []
   nums_1 = convert_1 p, q
@@ -45,7 +50,10 @@ def solve p, q, num_convert
   # p num_convert
   nums.each do |num|
     answer = solve num, q, num_convert + 1
-    answers << answer if !answer.nil?
+    if !answer.nil?
+      p num if answer == 6
+      answers << answer 
+    end
   end
 
   answers.min
