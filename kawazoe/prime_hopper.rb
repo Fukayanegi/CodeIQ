@@ -38,9 +38,9 @@ def convert_1 num, limit
   left = num.to_s.length
   (1..9).each do |v|
     converted << v * 10**left + num
-    converted << v + num * 10
+    converted << num * 10 + v
   end
-  converted.select{|v| v <= limit && (prime? v)}
+  converted.select{|v| v.odd? && v % 3 != 0 && v <= limit && (prime? v)}
 end
 
 def convert_2 num
@@ -49,7 +49,11 @@ def convert_2 num
   return converted if digit < 1
   converted << num % 10**digit
   converted << num / 10
-  converted.select{|v| prime? v}
+  if num > 99
+    converted.select{|v| (v.odd?) && (v % 3 != 0) && (v > num / 100) && (prime? v)}
+  else
+    converted.select{|v| (v > num / 100) && (prime? v)}
+  end
 end
 
 @loop_chek = {}
@@ -66,7 +70,7 @@ def solve p, q, num_convert
   nums_1 = convert_1 p, q
   nums_2 = convert_2 p
   nums = nums_1.concat nums_2
-  # p num_convert
+  # p nums
   nums.each do |num|
     answer = solve num, q, num_convert + 1
     if !answer.nil?
@@ -77,9 +81,6 @@ def solve p, q, num_convert
 
   answers.min
 end
-
-make_primes q
-# p @primes
 
 answer_tmp = solve p, q, 0
 p (answer_tmp.nil? ? -1 : answer_tmp)
