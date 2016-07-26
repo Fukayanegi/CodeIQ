@@ -1,5 +1,5 @@
 
-p, q = STDIN.gets.chomp.split(" ").map{|v| v.to_i}
+@p, @q = STDIN.gets.chomp.split(" ").map{|v| v.to_i}
 # p "#{p}, #{q}"
 
 @primes = []
@@ -58,29 +58,40 @@ end
 
 @loop_chek = {}
 def solve p, q, num_convert
-  return nil if (@loop_chek.include? p) && (@loop_chek[p] <= num_convert)
+  return num_convert if p == q
+  return nil if (@loop_chek.include? p) && (@loop_chek[p] < num_convert)
+  return nil if (@loop_chek.include? q) && (@loop_chek[q] < num_convert)
   @loop_chek[p] = num_convert
-
-  if p == q
-    # p p if num_convert == 6
-    return num_convert
-  end
+  @loop_chek[q] = num_convert
 
   answers = []
-  nums_1 = convert_1 p, q
+  nums_1 = convert_1 p, @q
   nums_2 = convert_2 p
-  nums = nums_1.concat nums_2
-  # p nums
-  nums.each do |num|
-    answer = solve num, q, num_convert + 1
-    if !answer.nil?
-      # p num if answer == 6
-      answers << answer 
+  nums_3 = convert_1 q, @q
+  nums_4 = convert_2 q
+  nums_from = nums_1.concat nums_2
+  nums_to = nums_3.concat nums_4
+
+  nums_from.each do |num|
+    if nums_to.include? q
+      answers << num_convert + 1
+    elsif nums_to.include? num
+      answers << num_convert + 2
+    else
+      nums_to.each do |target|
+        # p "#{num}, #{target}, #{num_convert}"
+        answer = solve num, target, num_convert + 2
+        if !answer.nil?
+          answers << answer
+          break
+        end
+      end
     end
   end
 
-  answers.min
+  answer_tmp = answers.min
+  answer_tmp
 end
 
-answer_tmp = solve p, q, 0
+answer_tmp = solve @p, @q, 0
 p (answer_tmp.nil? ? -1 : answer_tmp)
