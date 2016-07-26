@@ -1,14 +1,27 @@
+
+p, q = STDIN.gets.chomp.split(" ").map{|v| v.to_i}
+# p "#{p}, #{q}"
+
 @primes = []
-def prime? num
-  return false if num == 1
-  return true if @primes.include? num
-  prime = true
-  (2..num/2).each do |denomi|
-    prime = num % denomi != 0
-    break if !prime
+def make_primes limit
+  (2..limit).each do |num|
+    is_prime = true
+    quotient = limit
+    @primes.each do |prime|
+      # 判定対象が前回判定時の商を超える素数だった場合、
+      # 以降の商は前回の素数を下回る（既に存在しないことが判定済）ため打ち切り
+      if prime > quotient
+        is_prime = true
+        break
+      end
+      quotient = num / prime
+      if num % prime == 0
+        is_prime = false
+        break
+      end
+    end
+    @primes << num if is_prime
   end
-  @primes << num if prime
-  prime
 end
 
 def convert_1 num, limit
@@ -18,7 +31,7 @@ def convert_1 num, limit
     converted << v * 10**left + num
     converted << v + num * 10
   end
-  converted.select{|v| v <= limit && (prime? v)}
+  converted.select{|v| v <= limit && (@primes.include? v)}
 end
 
 def convert_2 num
@@ -27,11 +40,8 @@ def convert_2 num
   return converted if digit < 1
   converted << num % 10**digit
   converted << num / 10
-  converted.select{|v| prime? v}
+  converted.select{|v| @primes.include? v}
 end
-
-p, q = STDIN.gets.chomp.split(" ").map{|v| v.to_i}
-# p "#{p}, #{q}"
 
 @loop_chek = {}
 def solve p, q, num_convert
@@ -39,7 +49,7 @@ def solve p, q, num_convert
   @loop_chek[p] = num_convert
 
   if p == q
-    p p if num_convert == 6
+    # p p if num_convert == 6
     return num_convert
   end
 
@@ -51,13 +61,16 @@ def solve p, q, num_convert
   nums.each do |num|
     answer = solve num, q, num_convert + 1
     if !answer.nil?
-      p num if answer == 6
+      # p num if answer == 6
       answers << answer 
     end
   end
 
   answers.min
 end
+
+make_primes q
+# p @primes
 
 answer_tmp = solve p, q, 0
 p (answer_tmp.nil? ? -1 : answer_tmp)
