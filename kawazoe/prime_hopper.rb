@@ -3,8 +3,9 @@ p, q = STDIN.gets.chomp.split(" ").map{|v| v.to_i}
 # p "#{p}, #{q}"
 
 @primes = []
+@limit = 1
 def make_primes limit
-  (2..limit).each do |num|
+  ((@limit+1)..limit).each do |num|
     is_prime = true
     quotient = limit
     @primes.each do |prime|
@@ -22,6 +23,14 @@ def make_primes limit
     end
     @primes << num if is_prime
   end
+  @limit = limit
+end
+
+def prime? num
+  if num > @limit
+    make_primes num
+  end
+  @primes.include? num
 end
 
 def convert_1 num, limit
@@ -31,7 +40,7 @@ def convert_1 num, limit
     converted << v * 10**left + num
     converted << v + num * 10
   end
-  converted.select{|v| v <= limit && (@primes.include? v)}
+  converted.select{|v| v <= limit && (prime? v)}
 end
 
 def convert_2 num
@@ -40,7 +49,7 @@ def convert_2 num
   return converted if digit < 1
   converted << num % 10**digit
   converted << num / 10
-  converted.select{|v| @primes.include? v}
+  converted.select{|v| prime? v}
 end
 
 @loop_chek = {}
