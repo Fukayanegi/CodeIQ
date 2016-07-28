@@ -93,5 +93,56 @@ def solve p, q, num_convert
   answer_tmp
 end
 
-answer_tmp = solve @p, @q, 0
+num_convert = 0
+@loop_chek_from = {@p => 0}
+@loop_chek_to = {@q => 0}
+from_to = [[@p, @q]]
+nums_from_all = []
+nums_to_all = []
+while true do
+  if from_to.length == 0
+    found = true
+    num_convert = -1
+  end
+
+  from_to_next = []
+  from_to.each do |from, to|
+    nums_from = (convert_1 from, @q).concat (convert_2 from)
+    nums_to = (convert_1 to, @q).concat (convert_2 to)
+
+    if nums_from.include? to
+      found = true
+      num_convert += 1
+      break
+    end
+
+    nums_from.each do |f|
+      nums_to.each do |t|
+        if f == t
+          found = true
+          num_convert += 2
+        end
+
+        from_to_next << [f, t] if (!(@loop_chek_from.include? f) && !(@loop_chek_to.include? t))
+      end
+    end
+
+    nums_from_all.concat nums_from
+    nums_to_all.concat nums_to
+  end
+
+  nums_from_all.each do |f|
+    @loop_chek_from[f] = num_convert
+  end
+  nums_to_all.each do |t|
+    @loop_chek_to[t] = num_convert
+  end
+
+  break if found
+  from_to = from_to_next
+  num_convert += 2
+end
+
+answer_tmp = num_convert
+# answer_tmp = solve @p, @q, 0
 p (answer_tmp.nil? ? -1 : answer_tmp)
