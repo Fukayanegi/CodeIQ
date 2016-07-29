@@ -1,3 +1,4 @@
+require 'set'
 
 @p, @q = STDIN.gets.chomp.split(" ").map{|v| v.to_i}
 # p "#{p}, #{q}"
@@ -57,14 +58,14 @@ def convert_2 num
 end
 
 num_convert = 0
-loop_chek_from = {@p => 0}
-loop_chek_to = {@q => 0}
-nums_from_all = [@p]
-nums_to_all = [@q]
+loop_chek_from = Set[@p]
+loop_chek_to = Set[@q]
+nums_from_all = Set[@p]
+nums_to_all = Set[@q]
 
 while true do
-  nums_from_next = []
-  nums_to_next = []
+  nums_from_next = Set.new
+  nums_to_next = Set.new
 
   if nums_from_all.length == 0 || nums_to_all.length == 0
     found = true
@@ -73,23 +74,21 @@ while true do
 
   nums_from_all.each do |from|
     from_tmp = (convert_1 from, @q).concat (convert_2 from)
-    nums_from_next.concat from_tmp.select{|f| !(loop_chek_from.include? f)}
+    nums_from_next.merge from_tmp.select{|f| !(loop_chek_from.include? f)}
   end
 
   nums_to_all.each do |to|
     to_tmp = (convert_1 to, @q).concat (convert_2 to)
-    nums_to_next.concat to_tmp.select{|t| !(loop_chek_to.include? t)}
+    nums_to_next.merge to_tmp.select{|t| !(loop_chek_to.include? t)}
   end
 
-  nums_from_next.each do |from|
-    if nums_to_all.include? from
+  nums_from_next.each do |f|
+    if nums_to_all.include? f
       found = true
       num_convert += 1
       break
     end
-  end
 
-  nums_from_next.each do |f|
     nums_to_next.each do |t|
       if f == t
         found = true
@@ -102,12 +101,8 @@ while true do
 
   break if found
 
-  nums_from_next.each do |f|
-    loop_chek_from[f] = num_convert
-  end
-  nums_to_next.each do |t|
-    loop_chek_to[t] = num_convert
-  end
+  loop_chek_from.merge nums_from_next
+  loop_chek_to.merge nums_to_next
 
   nums_from_all = nums_from_next
   nums_to_all = nums_to_next
