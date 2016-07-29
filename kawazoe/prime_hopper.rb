@@ -56,49 +56,13 @@ def convert_2 num
   end
 end
 
-@loop_chek = {}
-def solve p, q, num_convert
-  return num_convert if p == q
-  return nil if (@loop_chek.include? p) && (@loop_chek[p] < num_convert)
-  return nil if (@loop_chek.include? q) && (@loop_chek[q] < num_convert)
-  @loop_chek[p] = num_convert
-  @loop_chek[q] = num_convert
-
-  answers = []
-  nums_1 = convert_1 p, @q
-  nums_2 = convert_2 p
-  nums_3 = convert_1 q, @q
-  nums_4 = convert_2 q
-  nums_from = nums_1.concat nums_2
-  nums_to = nums_3.concat nums_4
-
-  nums_from.each do |num|
-    if nums_to.include? q
-      answers << num_convert + 1
-    elsif nums_to.include? num
-      answers << num_convert + 2
-    else
-      nums_to.each do |target|
-        # p "#{num}, #{target}, #{num_convert}"
-        answer = solve num, target, num_convert + 2
-        if !answer.nil?
-          answers << answer
-          break
-        end
-      end
-    end
-  end
-
-  answer_tmp = answers.min
-  answer_tmp
-end
-
 num_convert = 0
 @loop_chek_from = {@p => 0}
 @loop_chek_to = {@q => 0}
 from_to = [[@p, @q]]
 nums_from_all = []
 nums_to_all = []
+
 while true do
   if from_to.length == 0
     found = true
@@ -121,15 +85,19 @@ while true do
         if f == t
           found = true
           num_convert += 2
+          break
         end
 
         from_to_next << [f, t] if (!(@loop_chek_from.include? f) && !(@loop_chek_to.include? t))
       end
+      break if found
     end
 
     nums_from_all.concat nums_from
     nums_to_all.concat nums_to
   end
+
+  break if found
 
   nums_from_all.each do |f|
     @loop_chek_from[f] = num_convert
@@ -138,11 +106,9 @@ while true do
     @loop_chek_to[t] = num_convert
   end
 
-  break if found
   from_to = from_to_next
   num_convert += 2
 end
 
 answer_tmp = num_convert
-# answer_tmp = solve @p, @q, 0
 p (answer_tmp.nil? ? -1 : answer_tmp)
