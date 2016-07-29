@@ -57,56 +57,60 @@ def convert_2 num
 end
 
 num_convert = 0
-@loop_chek_from = {@p => 0}
-@loop_chek_to = {@q => 0}
-from_to = [[@p, @q]]
-nums_from_all = []
-nums_to_all = []
+loop_chek_from = {@p => 0}
+loop_chek_to = {@q => 0}
+nums_from_all = [@p]
+nums_to_all = [@q]
 
 while true do
-  if from_to.length == 0
+  nums_from_next = []
+  nums_to_next = []
+
+  if nums_from_all.length == 0 || nums_to_all.length == 0
     found = true
     num_convert = -1
   end
 
-  from_to_next = []
-  from_to.each do |from, to|
-    nums_from = (convert_1 from, @q).concat (convert_2 from)
-    nums_to = (convert_1 to, @q).concat (convert_2 to)
+  nums_from_all.each do |from|
+    from_tmp = (convert_1 from, @q).concat (convert_2 from)
+    nums_from_next.concat from_tmp.select{|f| !(loop_chek_from.include? f)}
+  end
 
-    if nums_from.include? to
+  nums_to_all.each do |to|
+    to_tmp = (convert_1 to, @q).concat (convert_2 to)
+    nums_to_next.concat to_tmp.select{|t| !(loop_chek_to.include? t)}
+  end
+
+  nums_from_next.each do |from|
+    if nums_to_all.include? from
       found = true
       num_convert += 1
       break
     end
+  end
 
-    nums_from.each do |f|
-      nums_to.each do |t|
-        if f == t
-          found = true
-          num_convert += 2
-          break
-        end
-
-        from_to_next << [f, t] if (!(@loop_chek_from.include? f) && !(@loop_chek_to.include? t))
+  nums_from_next.each do |f|
+    nums_to_next.each do |t|
+      if f == t
+        found = true
+        num_convert += 2
+        break
       end
-      break if found
     end
-
-    nums_from_all.concat nums_from
-    nums_to_all.concat nums_to
+    break if found
   end
 
   break if found
 
-  nums_from_all.each do |f|
-    @loop_chek_from[f] = num_convert
+  nums_from_next.each do |f|
+    loop_chek_from[f] = num_convert
   end
-  nums_to_all.each do |t|
-    @loop_chek_to[t] = num_convert
+  nums_to_next.each do |t|
+    loop_chek_to[t] = num_convert
   end
 
-  from_to = from_to_next
+  nums_from_all = nums_from_next
+  nums_to_all = nums_to_next
   num_convert += 2
 end
 
