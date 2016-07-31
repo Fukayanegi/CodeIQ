@@ -80,7 +80,7 @@ def convert_2 nums, nums_next
     return nums if digit < 1
     v1 = num % 10**digit
     v2 = num / 10
-    nums_next << v1 if prime? v1
+    nums_next << v1 if ((prime? v1) && (v1 > 10**(digit-1)))
     nums_next << v2 if prime? v2
   end
 
@@ -92,6 +92,7 @@ end
 
 # 最初に素数配列を作成してしまう
 make_primes @q
+p @primes
 
 num_convert = 0
 
@@ -131,6 +132,7 @@ while true do
   end
 
   if (nums_from_next & nums_to_next).length > 0
+    # p nums_from_next & nums_to_next
     num_convert += 2
     break
   end
