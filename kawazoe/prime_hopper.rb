@@ -1,5 +1,3 @@
-require 'set'
-
 @p, @q = STDIN.gets.chomp.split(" ").map{|v| v.to_i}
 
 @primes = []
@@ -92,7 +90,7 @@ end
 
 # 最初に素数配列を作成してしまう
 make_primes @q
-p @primes
+# p @primes
 
 num_convert = 0
 
