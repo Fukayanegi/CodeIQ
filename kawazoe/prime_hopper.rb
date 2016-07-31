@@ -1,10 +1,10 @@
 require 'set'
 
 @p, @q = STDIN.gets.chomp.split(" ").map{|v| v.to_i}
-# p "#{p}, #{q}"
 
 @primes = []
 @limit = 1
+# 素数配列作成
 def make_primes limit
   ((@limit+1)..limit).each do |num|
     is_prime = true
@@ -27,82 +27,116 @@ def make_primes limit
   @limit = limit
 end
 
+# 素数判定
 def prime? num
-  if num > @limit
-    make_primes num
-  end
-  @primes.include? num
-end
+  idx = @primes.length / 2
+  delta = idx
+  answer = true
 
-def convert_1 num, limit
-  converted = []
-  left = num.to_s.length
-  (1..9).each do |v|
-    converted << v * 10**left + num
-    converted << num * 10 + v
-  end
-  converted.select{|v| v.odd? && v % 3 != 0 && v <= limit && (prime? v)}
-end
-
-def convert_2 num
-  converted = []
-  digit = num.to_s.length - 1
-  return converted if digit < 1
-  converted << num % 10**digit
-  converted << num / 10
-  if num > 99
-    converted.select{|v| (v.odd?) && (v % 3 != 0) && (v > num / 100) && (prime? v)}
-  else
-    converted.select{|v| (v > num / 100) && (prime? v)}
-  end
-end
-
-num_convert = 0
-loop_chek_from = Set[@p]
-loop_chek_to = Set[@q]
-nums_from_all = Set[@p]
-nums_to_all = Set[@q]
-
-while true do
-  nums_from_next = Set.new
-  nums_to_next = Set.new
-
-  if nums_from_all.length == 0 || nums_to_all.length == 0
-    found = true
-    num_convert = -1
-  end
-
-  nums_from_all.each do |from|
-    from_tmp = (convert_1 from, @q).concat (convert_2 from)
-    nums_from_next.merge from_tmp.select{|f| !(loop_chek_from.include? f)}
-  end
-
-  nums_to_all.each do |to|
-    to_tmp = (convert_1 to, @q).concat (convert_2 to)
-    nums_to_next.merge to_tmp.select{|t| !(loop_chek_to.include? t)}
-  end
-
-  nums_from_next.each do |f|
-    if nums_to_all.include? f
-      found = true
-      num_convert += 1
+  while delta > 0 && idx < @primes.length && idx >= 0
+    target = @primes[idx]
+    if target == num
       break
     end
 
-    nums_to_next.each do |t|
-      if f == t
-        found = true
-        num_convert += 2
-        break
+    if delta > 1
+      delta = (delta / 2.0).ceil
+      if target < num
+        idx = idx + delta
+        idx = @primes.length - 1 if idx >= @primes.length
+      else
+        idx = idx - delta
+        idx = 0 if idx < 0
       end
+    else
+      answer = false
+      break
     end
-    break if found
   end
 
-  break if found
+  answer
+end
 
-  loop_chek_from.merge nums_from_next
-  loop_chek_to.merge nums_to_next
+def convert_1 nums, limit, nums_next
+  nums.each do |num|
+    tmp = []
+    left = num.to_s.length
+    (1..9).each do |v|
+      v1 = v * 10**left + num
+      v2 = num * 10 + v
+      tmp << v1 if prime? v1
+      tmp << v2 if prime? v2
+    end
+    nums_next.concat tmp
+  end
+
+  nums_next.uniq!
+  nums_next
+end
+
+def convert_2 nums, nums_next
+  nums.each do |num|
+    digit = num.to_s.length - 1
+    return nums if digit < 1
+    v1 = num % 10**digit
+    v2 = num / 10
+    nums_next << v1 if prime? v1
+    nums_next << v2 if prime? v2
+  end
+
+  nums_next.uniq!
+  nums_next
+end
+
+# メインロジックここから
+
+# 最初に素数配列を作成してしまう
+make_primes @q
+
+num_convert = 0
+
+# 重複探索を避けるための既出数値チェック
+loop_chek_from = [@p]
+loop_chek_to = [@q]
+
+# 開始数値、終了数値両側からの探索初期値
+# #{num_convert}回目の前数値の配列
+# loop_chek_from,loop_check_toに存在している場合、
+# もっとその数値に辿り着く方が最短になる変換ルートがあるはずなので除外する
+nums_from_all = [@p]
+nums_to_all = [@q]
+
+while true do
+  nums_from_next = []
+  nums_to_next = []
+
+  if nums_from_all.length == 0 || nums_to_all.length == 0
+    num_convert = -1
+    break
+  end
+
+  # TODO:
+  # この辺は重複コードがあるのでリファクタできるかも
+  convert_1 nums_from_all, @q, nums_from_next
+  convert_2 nums_from_all, nums_from_next
+  nums_from_next.select!{|f| !(loop_chek_from.include? f)}
+
+  convert_1 nums_to_all, @q, nums_to_next
+  convert_2 nums_to_all, nums_to_next
+  nums_to_next.select!{|f| !(loop_chek_to.include? f)}
+
+  if (nums_from_next & nums_to_all).length > 0
+    num_convert += 1
+    break
+  end
+
+  if (nums_from_next & nums_to_next).length > 0
+    num_convert += 2
+    break
+  end
+
+  loop_chek_from |= nums_from_next
+  loop_chek_to |= nums_to_next
 
   nums_from_all = nums_from_next
   nums_to_all = nums_to_next
