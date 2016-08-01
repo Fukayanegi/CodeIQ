@@ -20,12 +20,12 @@ def make_sq_cd first, second
 end
 
 def make_sq_gmtc first, second
-  ratio = second / first
+  ratio = second / first.to_f
   sq = []
-  return sq if second % first != 0
+  # return sq if second % first != 0
 
   5.times do |t|
-    sq << first * ratio ** t
+    sq << (first * ratio ** t).round.to_i
   end
   sq
 end
@@ -44,6 +44,11 @@ first, second = sequence[0..1]
 sq1 = make_sq_cd first, second
 sq2 = make_sq_gmtc first, second
 sq3 = make_sq_fb first, second
+
+# p @fibonacci
+# p sq1
+# p sq2
+# p sq3
 
 if sequence == sq1
   puts "A"
