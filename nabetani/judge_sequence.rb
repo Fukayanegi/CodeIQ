@@ -31,12 +31,12 @@ def make_sq_gmtc first, second
 end
 
 def make_sq_fb first, second
-  idx = @fibonacci.find{|num| num == first} - 1
+  idx = @fibonacci.find{|num| num == first}
   sq = []
   return sq if idx.nil?
   idx += 1 if second != @fibonacci[idx+1]
 
-  sq = @fibonacci[idx..idx+4]
+  sq = @fibonacci[idx-1..idx+5]
   sq
 end
 
