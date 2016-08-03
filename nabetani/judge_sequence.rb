@@ -9,6 +9,7 @@ while num1 + num2 <= @limit
   @fibonacci << num1 + num2
   num1, num2 = num2, num1 + num2
 end
+# p @fibonacci
 
 def make_sq_cd first, second
   diff = second - first
@@ -25,8 +26,10 @@ def make_sq_gmtc first, second
   sq = [first]
 
   (1..4).inject(first) do |acm, i|
+    tmp = (acm * ratio).to_f
+    break if tmp % 1 != 0
     sq << (acm * ratio).to_i
-    (acm * ratio).to_i
+    tmp.to_i
   end
   sq
 end
