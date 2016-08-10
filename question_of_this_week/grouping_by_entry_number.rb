@@ -43,7 +43,7 @@ def calc_e_value m
 end
 
 m = n
-while calc_e_value(m) < n
+while calc_e_value(m) <= n
   m += 1
 end
 
