@@ -31,14 +31,17 @@ def build_ng_binary cp_h, n, target, base, base_nums
         ng_patterns.merge! tmp_ng
       elsif (cp_2 = target - cp_1) > 0 && cp_1 > cp_2
         # p "#{cp_1}, #{cp_2}"
-        tmp += (1 << cp_2 - 1)
+        tmp = (1 << cp_2 - 1)
         if base ^ tmp >= base
           # ng_patterns[base + (1 << cp_1 - 1) + (1 << cp_2 - 1)] = base_nums + 2
-          ng_patterns[base ^ tmp] = base_nums + 2
+          ng_patterns[base + (1 << cp_1 - 1) + (1 << cp_2 - 1)] = base_nums + 2
         end
       end
     end
   end
+  # ng_patterns.each do |(k, v)|
+  #   printf "ng: %0#10b\n", k if target == 12
+  # end
   ng_patterns
 end
 
@@ -49,19 +52,19 @@ def solve cp, n
     (1..cp).to_a.combination(nums).each do |target|
     # p "nums >= 2: #{target}" if nums > 1
       base = target.inject(0){|acc, v| acc += 1 << v - 1}
-      p "#{target}, #{base}, #{base.to_s(2)}"
+      # p "#{target}, #{base}, #{base.to_s(2)}"
       # printf "nums >= 2: #{target}, #{base}, %0#{cp}b\n", base if nums > 1
       nums.upto(n - nums).each do |target_nums|
-        p "call from solve: cp_h = #{target.max - 1}, n = #{target_nums}, target = #{target.inject(:+)}, base = #{base}, base_nums = #{nums}"
+        # p "call from solve: cp_h = #{target.max - 1}, n = #{target_nums}, target = #{target.inject(:+)}, base = #{base}, base_nums = #{nums}"
         ng = build_ng_binary target.max - 1, target_nums, target.inject(:+), base, nums
-        p ng
+        # p ng
         ng.each do |(binary, binary_nums)|
-          printf "binary: %0#{cp}b\n", binary
+          # printf "binary: %0#{cp}b\n", binary
           (1..cp).to_a.combination(n - binary_nums) do |add|
-            tmp = add.inject(0){|acm, v| acm += (1 << v - 1)}
-            printf "tmp: %0#{cp}b\n", tmp
-            if binary ^ tmp >= binary
-              not_answer << (binary ^ tmp)
+            valid = add.inject(true){|acm, v| acm &= (binary ^ (1 << v - 1) >= binary)}
+            # printf "tmp: %0#{cp}b\n", tmp
+            if valid
+              not_answer << (binary ^ add.inject(0){|acm, v| acm += (1 << v - 1)})
               # printf "ng_binary: %0#{cp}b\n", binary ^ tmp
             end
           end
