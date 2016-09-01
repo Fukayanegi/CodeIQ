@@ -40,9 +40,11 @@ end
 m, n = STDIN.gets.chomp.split(" ").map{|v| v.to_i}
 # p "m = #{m}, n = #{n}"
 
+# parの組み合わせを作る
 courses = build_courses m, n, 1
 patterns = 0
 
+# parの組み合わせごとに順列を数え上げる
 courses.each do |course|
   course_h = course.inject({}) do |acc, v|
     acc[v] = 0 if !acc.include? v
@@ -50,6 +52,7 @@ courses.each do |course|
     acc
   end
 
+  # 2,5,5等の組み合わせ時の重複を考慮して割り戻す
   comb = course_h.select{|k, v| v > 1}.inject(1){|acc, (k, v)| acc *= permutation(v, v); acc}
   patterns += factorial(m) / comb
   # p "course = #{course}, course_h = #{course_h}, comb = #{comb}"
