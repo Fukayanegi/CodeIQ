@@ -8,12 +8,12 @@ class J_letter
   }
 
   @@map_mother = {
-    'a' => 1, 'i' => 2, 'u' => 3, 'e' => 4, 'o' => 5, 'n' => 6
+    'a' => 1, 'i' => 2, 'u' => 3, 'e' => 4, 'o' => 5
   }
   @@map_child = {
     'a' => 0, 'i' => 0, 'u' => 0, 'e' => 0, 'o' => 0, 
     'k'=> 1, 's' => 2, 't' => 3, 'c' => 3, 'n' => 4, 
-    'h' => 5, 'f' => 5, 'm' => 6, 'y' => 7, 'r' => 8, 'w' => 9, 'n' => 10
+    'h' => 5, 'f' => 5, 'm' => 6, 'y' => 7, 'r' => 8, 'w' => 9
   }
 
   attr_accessor :letter, :mother, :child, :option
@@ -23,16 +23,21 @@ class J_letter
     @option = 0
     key = letter.dup
 
-    if !@@nigori[key[0]].nil?
-      @option = 1
-      key[0] = @@nigori[key[0]]
-    elsif !@@haretsu[key[0]].nil?
-      @option = 2
-      key[0] = @@haretsu[key[0]]
-    end
+    if letter == 'nn'
+      @mother = @@map_mother.length + 1
+      @child = @@map_child.length + 1
+    else
+      if !@@nigori[key[0]].nil?
+        @option = 1
+        key[0] = @@nigori[key[0]]
+      elsif !@@haretsu[key[0]].nil?
+        @option = 2
+        key[0] = @@haretsu[key[0]]
+      end
 
-    @mother = @@map_mother[key[-1]]
-    @child = @@map_child[key[0]]
+      @mother = @@map_mother[key[-1]]
+      @child = @@map_child[key[0]]
+    end
     yield(self) if block_given?
   end
 
