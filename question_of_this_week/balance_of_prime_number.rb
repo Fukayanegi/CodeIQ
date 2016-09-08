@@ -25,5 +25,32 @@ def make_primes limit
   @limit = limit
 end
 
+def solve smaller, bigger, choices
+  return 1 if (smaller == 0 && bigger == 0)
+
+  answer = 0
+  if bigger > 0
+    # 大きい数字を作れるか
+    target = choices.select{|v| v <= bigger}.dup
+    target.each do |choice_b|
+      answer += solve smaller, bigger - choice_b, choices.select{|v| v < choice_b}
+    end
+  elsif bigger == 0
+    # 小さい数字を作れるか
+    target = choices.select{|v| v <= smaller}.dup
+    target.each do |choice_s|
+      answer += solve smaller - choice_s, bigger, choices.select{|v| v < choice_s}
+    end
+  end
+
+  answer
+end
+
 make_primes m
-p @primes
+
+answer = 0
+((@primes.inject(:+) - n) / 2 + n).downto n do |bigger|
+  answer += solve bigger - n, bigger, @primes
+end
+
+puts answer
