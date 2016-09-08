@@ -25,21 +25,24 @@ def make_primes limit
   @limit = limit
 end
 
-def solve smaller, bigger, choices
+def solve smaller, bigger, choices_b, choices_s
   return 1 if (smaller == 0 && bigger == 0)
 
   answer = 0
   if bigger > 0
     # 大きい数字を作れるか
-    target = choices.select{|v| v <= bigger}.dup
+    target = choices_b.select{|v| v <= bigger}
     target.each do |choice_b|
-      answer += solve smaller, bigger - choice_b, choices.select{|v| v < choice_b}
+      choices_s.delete choice_b
+      # 2, 3 : 7 と 3, 2 : 7は同一ケースでありカウントを除外する必要があるためchoices_b.select{|v| v < choice_b}の制限を設ける
+      answer += solve smaller, bigger - choice_b, choices_b.select{|v| v < choice_b}, choices_s
+      choices_s.unshift choice_b
     end
   elsif bigger == 0
     # 小さい数字を作れるか
-    target = choices.select{|v| v <= smaller}.dup
+    target = choices_s.select{|v| v <= smaller}
     target.each do |choice_s|
-      answer += solve smaller - choice_s, bigger, choices.select{|v| v < choice_s}
+      answer += solve smaller - choice_s, bigger, choices_b, choices_s.select{|v| v < choice_s}
     end
   end
 
@@ -47,10 +50,14 @@ def solve smaller, bigger, choices
 end
 
 make_primes m
+# p @primes
+# p @primes.inject(:+)
 
 answer = 0
 ((@primes.inject(:+) - n) / 2 + n).downto n do |bigger|
-  answer += solve bigger - n, bigger, @primes
+  tmp = solve bigger - n, bigger, @primes, @primes.dup
+  # p "smaller = #{bigger - n}, bigger = #{bigger}, answer = #{tmp}"
+  answer += tmp
 end
 
-puts answer
+p answer
