@@ -109,6 +109,7 @@ while line = STDIN.gets do
       tmp = ""
     end
   end
+  text << (build_J_letter tmp) if tmp.length > 0
   texts[line] = text
 end
 
