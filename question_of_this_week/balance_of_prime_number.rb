@@ -1,3 +1,4 @@
+require 'set'
 m, n = STDIN.gets.chomp.split(" ").map{|v| v.to_i}
 
 # 素数配列作成
@@ -25,39 +26,45 @@ def make_primes limit
   @limit = limit
 end
 
-def solve smaller, bigger, choices_b, choices_s
-  return 1 if (smaller == 0 && bigger == 0)
-
-  answer = 0
-  if bigger > 0
-    # 大きい数字を作れるか
-    target = choices_b.select{|v| v <= bigger}
-    target.each do |choice_b|
-      choices_s.delete choice_b
-      # 2, 3 : 7 と 3, 2 : 7は同一ケースでありカウントを除外する必要があるためchoices_b.select{|v| v < choice_b}の制限を設ける
-      answer += solve smaller, bigger - choice_b, choices_b.select{|v| v < choice_b}, choices_s
-      choices_s.unshift choice_b
-    end
-  elsif bigger == 0
-    # 小さい数字を作れるか
-    target = choices_s.select{|v| v <= smaller}
-    target.each do |choice_s|
-      answer += solve smaller - choice_s, bigger, choices_b, choices_s.select{|v| v < choice_s}
-    end
+def compute_range primes
+  sum_range = {}
+  (0..primes.length).each do |len|
+    sum_min =len == 0 ? [0] : primes[0..len-1]
+    sum_max = len == 0 ? [0] : primes[primes.length-len..primes.length-1]
+    sum_range[len] = [sum_min.inject(:+), sum_max.inject(:+)]
   end
-
-  answer
+  sum_range
 end
 
 make_primes m
-# p @primes
-# p @primes.inject(:+)
+p @primes
+p @primes.inject(:+)
+sum_range = compute_range @primes
+p sum_range
 
-answer = 0
-((@primes.inject(:+) - n) / 2 + n).downto n do |bigger|
-  tmp = solve bigger - n, bigger, @primes, @primes.dup
-  # p "smaller = #{bigger - n}, bigger = #{bigger}, answer = #{tmp}"
-  answer += tmp
+@answer = Set.new
+0.upto(@primes.length / 2) do |less|
+  @primes.combination(less).each do |choices_l|
+    sum_l = choices_l.length > 0 ? choices_l.inject(:+) : 0
+    less_min, less_max = sum_l - n, sum_l + n
+
+    (@primes.length - less).downto(less) do |many|
+      many_min, many_max = sum_range[many]
+      # p "less: #{less_min}, #{less_max}"
+      # p "many: #{many_min}, #{many_max}"
+      next if (many_max < less_min) || (less_max < many_min)
+
+      # p "num of count : #{less}, #{many}"
+      (@primes - choices_l).combination(many).each do |choices_m|
+        sum_m = choices_m.length > 0 ? choices_m.inject(:+) : 0
+        if (sum_l - sum_m).abs == n
+          # p "#{sum_l}, #{sum_m}"
+          tmp_1, tmp_2 = choices_l, choices_m if sum_l <= sum_m
+          tmp_1, tmp_2 = choices_m, choices_l if sum_l > sum_m
+          @answer << "#{tmp_1}:#{tmp_2}"
+        end
+      end
+    end
+  end
 end
-
-p answer
+p @answer.count
