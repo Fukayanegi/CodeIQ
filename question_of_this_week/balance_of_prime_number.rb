@@ -38,33 +38,47 @@ end
 
 make_primes m
 p @primes
-p @primes.inject(:+)
+sum_all = @primes.inject(:+)
 sum_range = compute_range @primes
 p sum_range
 
-@answer = Set.new
-0.upto(@primes.length / 2) do |less|
+@memo = {0 => [], sum_all => @primes}
+1.upto(@primes.length / 2) do |less|
   @primes.combination(less).each do |choices_l|
-    sum_l = choices_l.length > 0 ? choices_l.inject(:+) : 0
-    less_min, less_max = sum_l - n, sum_l + n
-
-    (@primes.length - less).downto(less) do |many|
-      many_min, many_max = sum_range[many]
-      # p "less: #{less_min}, #{less_max}"
-      # p "many: #{many_min}, #{many_max}"
-      next if (many_max < less_min) || (less_max < many_min)
-
-      # p "num of count : #{less}, #{many}"
-      (@primes - choices_l).combination(many).each do |choices_m|
-        sum_m = choices_m.length > 0 ? choices_m.inject(:+) : 0
-        if (sum_l - sum_m).abs == n
-          # p "#{sum_l}, #{sum_m}"
-          tmp_1, tmp_2 = choices_l, choices_m if sum_l <= sum_m
-          tmp_1, tmp_2 = choices_m, choices_l if sum_l > sum_m
-          @answer << "#{tmp_1}:#{tmp_2}"
-        end
-      end
+    key = choices_l.inject(:+)
+    if !@memo.include? key
+      @memo[key] = []
+      @memo[sum_all - key] = []
     end
+    @memo[key] << choices_l
+    @memo[sum_all - key] << @primes - choices_l
   end
 end
-p @answer.count
+
+# @answer = Set.new
+# 0.upto(@primes.length / 2) do |less|
+#   less_min_min, less_max_max = sum_range[less]
+#   @primes.combination(less).each do |choices_l|
+#     sum_l = choices_l.length > 0 ? choices_l.inject(:+) : 0
+#     less_min, less_max = sum_l - n, sum_l + n
+
+#     (@primes.length - less).downto(less) do |many|
+#       many_min, many_max = sum_range[many]
+#       p "many[#{many}]: #{many_min}, #{many_max}"
+#       next if (many_max < less_min) || (less_max < many_min)
+
+#       p "num of count : #{less}, #{many}"
+#       (@primes - choices_l).combination(many).each do |choices_m|
+#         sum_m = choices_m.length > 0 ? choices_m.inject(:+) : 0
+#         if (sum_l - sum_m).abs == n
+#           # p "#{sum_l}, #{sum_m}"
+#           tmp_1, tmp_2 = choices_l, choices_m if sum_l <= sum_m
+#           tmp_1, tmp_2 = choices_m, choices_l if sum_l > sum_m
+#           p "**anseer** : #{tmp_1}, #{tmp_2}"
+#           @answer << "#{tmp_1}:#{tmp_2}"
+#         end
+#       end
+#     end
+#   end
+# end
+# p @answer.count
