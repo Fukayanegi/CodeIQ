@@ -26,23 +26,19 @@ def make_primes limit
   @limit = limit
 end
 
-def compute_range primes
-  sum_range = {}
-  (0..primes.length).each do |len|
-    sum_min =len == 0 ? [0] : primes[0..len-1]
-    sum_max = len == 0 ? [0] : primes[primes.length-len..primes.length-1]
-    sum_range[len] = [sum_min.inject(:+), sum_max.inject(:+)]
+make_primes m
+sum_all = @primes.inject(:+)
+bit_length = @primes.max
+
+def create_bits numbers, length
+  key = 0
+  numbers.each do |num|
+    key += 1 << (num - 1)
   end
-  sum_range
+  key
 end
 
-make_primes m
-p @primes
-sum_all = @primes.inject(:+)
-sum_range = compute_range @primes
-p sum_range
-
-@memo = {0 => [], sum_all => @primes}
+@memo = {0 => [0], sum_all => (create_bits @primes, bit_length)}
 1.upto(@primes.length / 2) do |less|
   @primes.combination(less).each do |choices_l|
     key = choices_l.inject(:+)
@@ -50,35 +46,21 @@ p sum_range
       @memo[key] = []
       @memo[sum_all - key] = []
     end
-    @memo[key] << choices_l
-    @memo[sum_all - key] << @primes - choices_l
+    @memo[key] << (create_bits choices_l, bit_length)
+    @memo[sum_all - key] << (create_bits @primes - choices_l, bit_length) if less != @primes.length - less
   end
 end
 
-# @answer = Set.new
-# 0.upto(@primes.length / 2) do |less|
-#   less_min_min, less_max_max = sum_range[less]
-#   @primes.combination(less).each do |choices_l|
-#     sum_l = choices_l.length > 0 ? choices_l.inject(:+) : 0
-#     less_min, less_max = sum_l - n, sum_l + n
-
-#     (@primes.length - less).downto(less) do |many|
-#       many_min, many_max = sum_range[many]
-#       p "many[#{many}]: #{many_min}, #{many_max}"
-#       next if (many_max < less_min) || (less_max < many_min)
-
-#       p "num of count : #{less}, #{many}"
-#       (@primes - choices_l).combination(many).each do |choices_m|
-#         sum_m = choices_m.length > 0 ? choices_m.inject(:+) : 0
-#         if (sum_l - sum_m).abs == n
-#           # p "#{sum_l}, #{sum_m}"
-#           tmp_1, tmp_2 = choices_l, choices_m if sum_l <= sum_m
-#           tmp_1, tmp_2 = choices_m, choices_l if sum_l > sum_m
-#           p "**anseer** : #{tmp_1}, #{tmp_2}"
-#           @answer << "#{tmp_1}:#{tmp_2}"
-#         end
-#       end
-#     end
-#   end
-# end
-# p @answer.count
+answer = 0
+((sum_all - n) / 2 + n).downto n do |bigger|
+  tmp_b = @memo.include?(bigger) ? @memo[bigger] : []
+  tmp_b.each do |choices_b|
+    tmp_l = @memo.include?(bigger - n) ? @memo[bigger - n] : []
+    tmp_l.each do |choices_l|
+      if (choices_b & choices_l) == 0
+        answer += 1
+      end
+    end
+  end
+end
+p answer
