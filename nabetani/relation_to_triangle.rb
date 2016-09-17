@@ -46,6 +46,8 @@ def judge_relation triangle, point
       elsif point[1] > y1 && point[1] < y2
         # 線分の間にpointがある
         answer = "A"
+      else
+        answer = "D"
       end
     end
   end
