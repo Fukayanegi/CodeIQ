@@ -20,7 +20,8 @@ def judge_relation triangle, point
       # 文句なしの外側
       answer = "D"
     else
-      target_lines = point[0] >= triangle[0][0] && point[0] <= triangle[1][0] ? [[0,1], [0,2]] : [[1, 2], [0, 2]]
+      target_lines = point[0] >= triangle[0][0] && point[0] <= triangle[1][0] && triangle[1][0] != triangle[2][0] \
+       ? [[0,1], [0,2]] : [[1, 2], [0, 2]]
       # 頂点を結ぶ線分の傾き、切片
       lines = target_lines.map do |(p1_idx, p2_idx)|
         p1, p2 = triangle[p1_idx], triangle[p2_idx]
