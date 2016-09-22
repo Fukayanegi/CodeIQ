@@ -2,7 +2,7 @@ require 'set'
 
 def create_target_map m, n
   bit_str = "1" * (n + 2)
-  m.times{bit_str << ("1" + "0" * m + "1")}
+  m.times{bit_str << ("1" + "0" * n + "1")}
   bit_str << "1" * (n + 2)
   bit_str.to_i(2)
 end
@@ -44,6 +44,7 @@ while next_maps.length > 0
         if !@memo.include? tmp
           tmp_rev = ~tmp & ("1"*(m+2)*(n+2)).to_i(2)
           next_maps << tmp
+          # next_maps << (tmp_rev & mask)
           @memo << tmp
           @memo << (tmp_rev & mask)
         end
@@ -51,7 +52,7 @@ while next_maps.length > 0
     end
   end
   steps += 1 if next_maps.length > 0
-  p "#{steps} #{next_maps.length}"
+  # p "#{steps} #{next_maps.length}"
 end
 
 puts steps
