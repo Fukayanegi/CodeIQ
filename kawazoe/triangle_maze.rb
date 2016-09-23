@@ -1,13 +1,20 @@
 class Solver
+  @@dividend = 1000003
   attr_accessor :n
 
   def initialize n
     @n = n
   end
 
+  def solve_inner n
+    return 1 if n == 1
+    answer = solve_inner(n - 1)
+    answer + answer**2
+  end
+
   def solve
-    answer = 0
-    answer
+    answer = solve_inner @n
+    answer % @@dividend
   end
 end
 
