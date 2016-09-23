@@ -1,3 +1,5 @@
+test_case = [100, 213, 214, 1170, 87654321, 100000000]
+
 class Solver
   @@dividend = 1000003
   attr_accessor :n
@@ -7,9 +9,11 @@ class Solver
   end
 
   def solve_inner n
-    return 1 if n == 1
-    answer = solve_inner(n - 1)
-    answer + answer**2
+    answer = 1
+    (n - 1).times do
+      answer = answer + answer**2
+    end
+    answer
   end
 
   def solve
