@@ -11,4 +11,8 @@ class Fixnum
   def permutation r = self
     self.factorial / (self - r).factorial
   end
+
+  def repeated_combination r = self
+    (self + r -1).combination r
+  end
 end
