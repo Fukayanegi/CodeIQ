@@ -7,10 +7,10 @@ class Solver
 
   def solve
     answer = 0
+    # j = n / 2として、 Σ (n - 2k) [k=0..j]
     1.upto(@n).each do |longest_edge|
-      1.upto(longest_edge).each do |middle_edge|
-        answer += 2 * middle_edge - longest_edge if 2 * middle_edge - longest_edge > 0
-      end
+      j = longest_edge / 2
+      answer += - j**2 + longest_edge*(1 + j)  - j
     end
     answer
   end
