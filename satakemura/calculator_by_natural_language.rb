@@ -58,7 +58,7 @@ class Calculator
     @@expressions.each do |expression, operator|
       if tmp = expression.match(statement)
         operands = []
-        tmp.names.each{|operand| operands << (parse_num tmp[operand])}
+        tmp.names.sort.each{|operand| operands << (parse_num tmp[operand])}
         first = operands.shift
         if operands.length > 0
           answer = first.send(operator, *operands)
