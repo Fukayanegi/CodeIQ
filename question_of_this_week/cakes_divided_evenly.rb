@@ -26,6 +26,7 @@ class Solver
     @w = w
   end
 
+  # num_of_people人で幅restのケーキを最低quota幅、最大limit幅で分け合ったときの幅の組み合わせを配列にして返す
   def solve_inner num_of_people, rest, quota, limit
     return [] if rest > num_of_people * limit || rest < num_of_people * quota
     return [[]] if num_of_people == 0
@@ -42,23 +43,24 @@ class Solver
 
   def solve
     answer = 0
-    w.downto(0).each do |max_w|
-      (0..n-max_w).each do |i|
-        min = i
-        max = i + max_w
+    # 最大-最小の差を固定して考える
+    w.downto(0).each do |diff|
+      # 最小の幅を固定
+      (0..n-diff).each do |min|
+        max = min + diff
+        # m-1人に最小の幅のケーキ、1人に最大の幅のケーキを切り分けたときの余り
+        rest = n - (min * m + diff)
 
-        # m-1人に最小の幅のケーキ、1に最大の幅のケーキを切り分けたときの余り
-        rest = n - (min * (m - 1) + max)
-        if rest >= 0 && rest <= (max-min)*(m-2)
+        # 余りがあるかつ、最小1人以外を全員最大幅にしたときに配り切れる幅だけ残っていた場合解が存在する
+        if rest >= 0 && rest <= diff * (m - 2)
+          base = m.permutation
           # p "min : #{min}, max: #{max}"
           # p "*suitable_rest: #{rest}, rest_person: #{m-2}"
-          tmp = solve_inner m - 2, rest + min *(m - 2), min, max
-          tmp.each{|cakes| cakes << min; cakes << max}
-          tmp.each do |cakes|
-            base = cakes.length.permutation
+          rest_cakes = solve_inner m - 2, n - (min + max), min, max
+          rest_cakes.each{|cakes| cakes << min; cakes << max}
+          rest_cakes.each do |cakes|
             counts = cakes.inject({}){|acc, v| (acc.include? v) || acc[v] = 0; acc[v] += 1; acc}
-            counts.select{|k, v| v > 1}.each{|k, v| base /= v.factorial}
-            answer += base
+            answer += counts.select{|k, v| v > 1}.inject(base){|acc, (k, v)| acc /= v.factorial; acc}
           end
         end
       end
