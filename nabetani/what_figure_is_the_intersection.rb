@@ -32,6 +32,13 @@ class Triangle
     answer.reduce(:+)
   end
 
+  def num_of_common_vertexes another_triangle
+    answer = vertexes.map do |vertex|
+      another_triangle.vertexes.include?(vertex) ? 1 : 0
+    end
+    answer.reduce(:+)
+  end
+
   def num_of_intersections another_triangle
     answer = another_triangle.line_segments.map do |another_line_seg|
       num_of_intersections_with_line(another_line_seg)
@@ -113,11 +120,7 @@ class LineSegment
     return tmp
   end
 
-  def has_point_of_intersection? another_line_seg
-    # 並行の場合false
-    return false if (a == 0 && another_line_seg.a == 0) || (b == 0 && another_line_seg.b == 0) \
-      || (inclination == another_line_seg.inclination)
-
+  def intersection another_line_seg
     # 交点のX座標
     tmp_x = if a == 0
       intercept_x
@@ -134,10 +137,24 @@ class LineSegment
       inclination * tmp_x + intercept
     end
 
+    Point.new(tmp_x, tmp_y)
+  end
+
+  def has_point_of_intersection? another_line_seg, exclude_poi = true
+    # 並行の場合false
+    return false if (a == 0 && another_line_seg.a == 0) || (b == 0 && another_line_seg.b == 0) \
+      || (inclination == another_line_seg.inclination)
 
     # 交点が双方の線分上にあればtrue
-    intersection = Point.new(tmp_x, tmp_y)
-    return on_the_line?(intersection) && another_line_seg.on_the_line?(intersection)
+    point = intersection(another_line_seg)
+    answer = on_the_line?(point) && another_line_seg.on_the_line?(point)
+
+    # TODO: フラグによる挙動の違いは避けたいところ
+    if exclude_poi
+      answer &= !(((point == p1) || (point == p2)) && ((point == another_line_seg.p1) || (point == another_line_seg.p2)))
+    end
+
+    answer
   end
 end
 
@@ -151,15 +168,20 @@ end
 
 answer = []
 relations.each do |(triangle1, triangle2)|
+
   # もう一つの三角形の頂点が自身の中にある数
   inner_vertexes = triangle1.num_of_inner_vertexes(triangle2)
   inner_vertexes += triangle2.num_of_inner_vertexes(triangle1)
   # p "inner_vertexes: #{inner_vertexes}"
 
-  # もう一つの三角形との交点の数
+  # 共有する頂点の数
+  common_vertexes = triangle1.num_of_common_vertexes(triangle2)
+  # p "common_vertexes: #{common_vertexes}"
+
+  # もう一つの三角形との交点の数（共有する頂点を除く）
   point_of_intersections = triangle1.num_of_intersections(triangle2)
   # p "point_of_intersections: #{point_of_intersections}"
-  answer << inner_vertexes + point_of_intersections
+  answer << inner_vertexes + common_vertexes + point_of_intersections
 end
 
 puts answer.map{|v| v < 3 ? "-" : v.to_s}.join
