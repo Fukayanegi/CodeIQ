@@ -25,6 +25,8 @@ class Triangle
     above && beneath && left && right
   end
 
+  # TODO: この辺のメソッドなんか集約できそう
+
   def num_of_inner_vertexes another_triangle
     answer = another_triangle.vertexes.map do |vertex|
       inside?(vertex) ? 1 : 0
@@ -35,6 +37,15 @@ class Triangle
   def num_of_common_vertexes another_triangle
     answer = vertexes.map do |vertex|
       another_triangle.vertexes.include?(vertex) ? 1 : 0
+    end
+    answer.reduce(:+)
+  end
+
+  def num_of_on_the_line_vertexes another_triangle
+    answer = another_triangle.vertexes.map do |vertex|
+      line_segments.map do |line_seg|
+        (line_seg.on_the_line?(vertex) && !vertexes.include?(vertex)) ? 1 : 0
+      end.reduce(:+)
     end
     answer.reduce(:+)
   end
@@ -99,9 +110,9 @@ class LineSegment
   def on_the_line? point
     if p1.x == p2.x
       y1, y2 = p1.y < p2.y ? [p1.y, p2.y] : [p2.y, p1.y]
-      point.y >= y1 && point.y <= y2
+      point.y >= y1 && point.y <= y2 && point.x == p1.x
     else
-      x_on_the_line?(point.x)
+      point.y == y(point.x)
     end
   end
 
@@ -151,7 +162,7 @@ class LineSegment
 
     # TODO: フラグによる挙動の違いは避けたいところ
     if exclude_poi
-      answer &= !(((point == p1) || (point == p2)) && ((point == another_line_seg.p1) || (point == another_line_seg.p2)))
+      answer &= ![p1, p2, another_line_seg.p1, another_line_seg.p2].include?(point)
     end
 
     answer
@@ -178,10 +189,15 @@ relations.each do |(triangle1, triangle2)|
   common_vertexes = triangle1.num_of_common_vertexes(triangle2)
   # p "common_vertexes: #{common_vertexes}"
 
-  # もう一つの三角形との交点の数（共有する頂点を除く）
+  # 線分上の頂点の数
+  on_the_line_vertexes = triangle1.num_of_on_the_line_vertexes(triangle2)
+  on_the_line_vertexes += triangle2.num_of_on_the_line_vertexes(triangle1)
+  # p "on_the_line_vertexes: #{on_the_line_vertexes}"
+
+  # もう一つの三角形との交点の数（共有する頂点、線分上の頂点を除く）
   point_of_intersections = triangle1.num_of_intersections(triangle2)
   # p "point_of_intersections: #{point_of_intersections}"
-  answer << inner_vertexes + common_vertexes + point_of_intersections
+  answer << inner_vertexes + common_vertexes + on_the_line_vertexes + point_of_intersections
 end
 
 puts answer.map{|v| v < 3 ? "-" : v.to_s}.join
