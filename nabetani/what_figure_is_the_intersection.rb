@@ -10,8 +10,6 @@ class Triangle
   def inside? point
     above, beneath, left, right = false, false, false, false
     line_segments.each do |line_seg|
-      # p point
-      # p line_seg
       if tmp_y = line_seg.y(point.x)
         above = true if tmp_y > point.y
         beneath = true if tmp_y < point.y
