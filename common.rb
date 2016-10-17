@@ -16,3 +16,23 @@ class Fixnum
     (self + r -1).combination r
   end
 end
+
+class Board
+  attr_accessor :board, :width, :height
+  def initialize width, height
+    @width = width
+    @height = height
+    @board = []
+    @board << "#" * (width + 2)
+    height.times do
+      @board << "#" + "." * width + "#"
+    end
+    @board << "#" * (width + 2)
+  end
+
+  def show
+    board.each do |line|
+      puts line
+    end
+  end
+end
