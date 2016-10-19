@@ -5,49 +5,52 @@ class Board
   def initialize width, height
     @width = width
     @height = height
-    @board = []
-    @board << "#" * (width + 2)
+    @board = 2 ** (width + 2) - 1
     height.times do
-      @board << "#" + "." * width + "#"
+      @board = @board << (width + 2) | ((1 << (width + 1)) + 1)
     end
-    @board << "#" * (width + 2)
+    @board = @board << (width + 2) | 2 ** (width + 2) - 1
+    @board_org = @board
   end
 
   def show
-    board.each do |line|
+    board.to_s(2).scan(/.{1,#{width + 2}}/).each do |line|
       puts line
     end
   end
 
   def fill cell
-    cell = cell - 1
+    base = (width + 2) * (height + 2)
+    cell -= 1
     row = cell / width + 1
-    col = cell - (row - 1) * width + 1
-    # p "row: #{row}, col: #{col}"
-    board[row][col] = "#"
+    col = cell % width + 1
+    self.board = (@board | (1 << (base - row * (width + 2) - col - 1)))
   end
 
   def clear
-    1.upto(height) do |row|
-      1.upto(width) do |col|
-        board[row][col] = "."
-      end
-    end
+    self.board = @board_org
   end
 
-  def solve step_strategy
+  def blank? w, h
+    base = (width + 2) * (height + 2)
+    i = base - 1 - (h * (width + 2) + w)
+    board & (1 << i) == 0
+    # ("%0#{base}b" % self.board)[i].to_i
+  end
+
+  def go_to_goal step_strategy
     answer = 1
     direction, w, h = DIRECTION[:DOWN], 1, 1
     while !(w == width && h == height)
-      # p "w: #{w}, h: #{h}"
-      # sleep(1)
-      direction, w_next, h_next = step_strategy.step(direction, w, h, board)
+      # p "w: #{w}, h: #{h}, direction: #{direction}"
+      direction, w_next, h_next = step_strategy.step(direction, w, h, self)
       answer += 1 if w_next != w || h_next != h
       if direction == DIRECTION[:LEFT] && w_next == 1 && h_next == 1
         answer = -1
         break
       end
       w, h = w_next, h_next
+      # sleep(1)
     end
     answer
   end
@@ -57,28 +60,32 @@ class RightHandStrategy
   def step direction, w, h, board
     case direction
     when DIRECTION[:DOWN] then
-      if board[h][w-1] == "."
+      # p "w: #{w - 1}, h: #{h}, blank?: #{board.blank?(w - 1, h)}"
+      if board.blank?(w - 1, h)
         w -= 1
         direction = DIRECTION[:LEFT]
       else
         direction = DIRECTION[:RIGHT]
       end
     when DIRECTION[:RIGHT] then
-      if board[h+1][w] == "."
+      # p "w: #{w}, h: #{h + 1}, blank?: #{board.blank?(w, h + 1)}"
+      if board.blank?(w, h + 1)
         h += 1
         direction = DIRECTION[:DOWN]
       else
         direction = DIRECTION[:UP]
       end
     when DIRECTION[:UP] then
-      if board[h][w+1] == "."
+      # p "w: #{w + 1}, h: #{h}, blank?: #{board.blank?(w + 1, h)}"
+      if board.blank?(w + 1, h)
         w += 1
         direction = DIRECTION[:RIGHT]
       else
         direction = DIRECTION[:LEFT]
       end
     when DIRECTION[:LEFT] then
-      if board[h-1][w] == "."
+      # p "w: #{w}, h: #{h - 1}, blank?: #{board.blank?(w, h - 1)}"
+      if board.blank?(w, h - 1)
         h -= 1
         direction = DIRECTION[:UP]
       else
@@ -90,42 +97,26 @@ class RightHandStrategy
 end
 
 w, h, n = STDIN.gets.chomp.split(' ').map{|v| v.to_i}
-# p "w: #{w}, h: #{h}, n: #{n}"
 
 # w * h の盤面を作る
 board = Board.new(w, h)
-# board.board[4][2] = "#"
-# board.board[4][3] = "#"
-# board.board[3][3] = "#"
-# board.board[2][2] = "#"
-# board.board[2][3] = "#"
 
-answer = w + h
+answer = w + h - 1
+patterns = 0
 # 総当たり
 (2..w*h).to_a.combination(n).each do |fill_pattern|
+  patterns += 1
   fill_pattern.each do |cell|
     board.fill(cell)
   end
   # board.show
 
   # 通過マス数をカウントする
-  steps = board.solve RightHandStrategy.new
+  steps = board.go_to_goal RightHandStrategy.new
   answer = steps if answer < steps
 
   board.clear
 end
 
 puts answer
-
-# nマス塗りつぶした、右手法で辿ったときに通過マス数が最長となる盤面を作る
-# set = (w - 1) / 3
-# 1.upto(n) do |i_fill|
-#   if i_fill < h * set
-#     row = (h - (i_fill - 1) % (h - 1))
-#     col = (2 + (i_fill - 1) / (h - 1)) + (i_fill.even? ? 1 : 0)
-#   end
-#   p "row: #{row}, col: #{col}"
-#   board.board[row][col] = "#"
-# end
-
-# board.show
+# puts patterns
