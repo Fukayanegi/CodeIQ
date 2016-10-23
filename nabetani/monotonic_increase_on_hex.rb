@@ -3,12 +3,11 @@ class Hex
 
   class Cell
     include Comparable
-    attr_accessor :row, :col, :value, :longest_path
-    def initialize row, col, char
-      @row = row
-      @col = col
+    attr_accessor :value, :longest_path
+    def initialize char
       @value = char.ord
       @longest_path = 1
+      @neighbors = []
     end
 
     def to_str
@@ -17,6 +16,16 @@ class Hex
 
     def <=> other
       @value - other.value
+    end
+
+    def add_neighbor neighbor
+      @neighbors << neighbor
+    end
+
+    def notify
+      @neighbors.each do |neighbor|
+        update_longest_path(longest_path)
+      end
     end
 
     def update_longest_path neighbor_longest_path
@@ -31,13 +40,34 @@ class Hex
 
   attr_accessor :hex
   def initialize str
+    def initialize_observer! hex
+      hex.each_with_index do |line, row|
+        line.each_with_index do |cell, col| 
+          @@neighbor_pos.each do |pos|
+            n_row, n_col = neighbor_index(row, col, pos)
+            neighbor = cell(n_row, n_col)
+            cell.add_neighbor(neighbor)
+          end
+        end
+      end
+    end
+
     @hex = []
     str.split("/").each_with_index do |line, row|
       h_line = []
       line.each_char.each_with_index do |c, col|
-        h_line << Cell.new(row, col, c)
+        h_line << Cell.new(c)
       end
-      hex << h_line
+      @hex << h_line
+    end
+
+    initialize_observer!(hex)
+  end
+
+  def show_inner
+    hex.each_with_index do |line, i|
+      tmp = yield line
+      p " " * (i - 3).abs + tmp.join(" ") + " " * (i - 3).abs
     end
   end
 
@@ -70,12 +100,6 @@ class Hex
   end
 
   private
-  def show_inner
-    hex.each_with_index do |line, i|
-      tmp = yield line
-      p " " * (i - 3).abs + tmp.join(" ") + " " * (i - 3).abs
-    end
-  end
 
   def cell row, col
     if row >= 0 && row < hex.length && col >= 0 && col < hex[row].length
