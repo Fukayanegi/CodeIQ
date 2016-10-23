@@ -42,15 +42,24 @@ class Hex
   end
 
   def show
-    hex.each_with_index do |line, i|
-      p " " * (i - 3).abs + line.join(" ") + " " * (i - 3).abs
-    end
+    show_inner{|line| line}
+    # hex.each_with_index do |line, i|
+    #   p " " * (i - 3).abs + line.join(" ") + " " * (i - 3).abs
+    # end
+  end
+
+  def show_value
+    show_inner{|line| line.map{|cell| cell.value - 'a'.ord}}
+    # hex.each_with_index do |line, i|
+    #   p " " * (i - 3).abs + line.map{|cell| cell.value}.join(" ") + " " * (i - 3).abs
+    # end
   end
 
   def show_longest_path
-    hex.each_with_index do |line, i|
-      p " " * (i - 3).abs + line.map{|cell| cell.longest_path}.join(" ") + " " * (i - 3).abs
-    end
+    show_inner{|line| line.map{|cell| cell.longest_path}}
+    # hex.each_with_index do |line, i|
+    #   p " " * (i - 3).abs + line.map{|cell| cell.longest_path}.join(" ") + " " * (i - 3).abs
+    # end
   end
 
   def search_longest_path
@@ -70,6 +79,13 @@ class Hex
   end
 
   private
+  def show_inner
+    hex.each_with_index do |line, i|
+      tmp = yield line
+      p " " * (i - 3).abs + tmp.join(" ") + " " * (i - 3).abs
+    end
+  end
+
   def cell row, col
     if row >= 0 && row < hex.length && col >= 0 && col < hex[row].length
       hex[row][col]
@@ -114,6 +130,8 @@ end
 
 input = STDIN.gets.chomp
 hex = Hex.new(input)
+hex.show_value
+puts
 hex.search_longest_path
 hex.show_longest_path
 puts
