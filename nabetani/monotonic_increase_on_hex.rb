@@ -64,23 +64,19 @@ class Hex
     initialize_observer!(hex)
   end
 
-  def show_inner
+  def show
     hex.each_with_index do |line, i|
-      tmp = yield line
-      p " " * (i - 3).abs + tmp.join(" ") + " " * (i - 3).abs
+      line_array = block_given? ? (yield line) : line
+      p " " * (i - 3).abs + line_array.join(" ") + " " * (i - 3).abs
     end
   end
 
-  def show
-    show_inner{|line| line}
-  end
-
   def show_value
-    show_inner{|line| line.map{|cell| "%02d" % (cell.value - 'a'.ord)}}
+    show{|line| line.map{|cell| "%02d" % (cell.value - 'a'.ord)}}
   end
 
   def show_longest_path
-    show_inner{|line| line.map{|cell| cell.longest_path}}
+    show{|line| line.map{|cell| cell.longest_path}}
   end
 
   def search_longest_path
@@ -147,11 +143,11 @@ end
 
 input = STDIN.gets.chomp
 hex = Hex.new(input)
-# hex.show
-# puts
-# hex.show_value
-# puts
+hex.show
+puts
+hex.show_value
+puts
 hex.search_longest_path
-# hex.show_value
-# puts
+hex.show_longest_path
+puts
 puts hex.longest_path
