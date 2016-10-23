@@ -43,23 +43,14 @@ class Hex
 
   def show
     show_inner{|line| line}
-    # hex.each_with_index do |line, i|
-    #   p " " * (i - 3).abs + line.join(" ") + " " * (i - 3).abs
-    # end
   end
 
   def show_value
-    show_inner{|line| line.map{|cell| cell.value - 'a'.ord}}
-    # hex.each_with_index do |line, i|
-    #   p " " * (i - 3).abs + line.map{|cell| cell.value}.join(" ") + " " * (i - 3).abs
-    # end
+    show_inner{|line| line.map{|cell| "%02d" % (cell.value - 'a'.ord)}}
   end
 
   def show_longest_path
     show_inner{|line| line.map{|cell| cell.longest_path}}
-    # hex.each_with_index do |line, i|
-    #   p " " * (i - 3).abs + line.map{|cell| cell.longest_path}.join(" ") + " " * (i - 3).abs
-    # end
   end
 
   def search_longest_path
@@ -94,24 +85,26 @@ class Hex
     end
   end
 
-  def neighbor_index row, col, pos
+  def neighbor_index base_row, base_col, pos
+    row = base_row
+    col = base_col
     case pos
     when :LEFT_ABOVE then
       row -= 1
-      col -= 1 if row <= 3
+      col -= 1 if base_row <= 3
     when :RIGHT_AVOVE then
       row -= 1
-      col += 1 if row > 3
+      col += 1 if base_row > 3
     when :LEFT then
       col -= 1
     when :RIGHT then
       col += 1
     when :LEFT_BENEATH then
       row += 1
-      col -= 1 if row > 3
+      col -= 1 if base_row >= 3
     when :RIGHT_BENEATH then
       row += 1
-      col += 1 if row <= 3
+      col += 1 if base_row < 3
     end
     [row, col]
   end
@@ -130,9 +123,11 @@ end
 
 input = STDIN.gets.chomp
 hex = Hex.new(input)
-hex.show_value
-puts
+# hex.show
+# puts
+# hex.show_value
+# puts
 hex.search_longest_path
-hex.show_longest_path
-puts
+# hex.show_value
+# puts
 puts hex.longest_path
