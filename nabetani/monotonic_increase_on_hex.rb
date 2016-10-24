@@ -24,29 +24,55 @@ class Hex
 
     def notify
       @neighbors.each do |neighbor|
-        update_longest_path(longest_path)
+        if (self > neighbor)
+          neighbor.update_longest_path!(longest_path) 
+        end
       end
     end
 
-    def update_longest_path neighbor_longest_path
+    def update_longest_path! neighbor_longest_path
       if longest_path < 1 + neighbor_longest_path
         self.longest_path = 1 + neighbor_longest_path 
-        true
-      else
-        false
+        notify
       end
     end
   end
 
   attr_accessor :hex
   def initialize str
-    def initialize_observer! hex
+    def neighbor_index base_row, base_col, pos
+      row = base_row
+      col = base_col
+      case pos
+      when :LEFT_ABOVE then
+        row -= 1
+        col -= 1 if base_row <= 3
+      when :RIGHT_AVOVE then
+        row -= 1
+        col += 1 if base_row > 3
+      when :LEFT then
+        col -= 1
+      when :RIGHT then
+        col += 1
+      when :LEFT_BENEATH then
+        row += 1
+        col -= 1 if base_row >= 3
+      when :RIGHT_BENEATH then
+        row += 1
+        col += 1 if base_row < 3
+      end
+      [row, col]
+    end
+
+    def set_observers! hex
       hex.each_with_index do |line, row|
         line.each_with_index do |cell, col| 
           @@neighbor_pos.each do |pos|
             n_row, n_col = neighbor_index(row, col, pos)
-            neighbor = cell(n_row, n_col)
-            cell.add_neighbor(neighbor)
+            if n_row >= 0 && n_row < hex.length && n_col >= 0 && n_col < hex[n_row].length
+              neighbor = hex[n_row][n_col]
+              cell.add_neighbor(neighbor)
+            end
           end
         end
       end
@@ -61,7 +87,7 @@ class Hex
       @hex << h_line
     end
 
-    initialize_observer!(hex)
+    set_observers!(hex)
   end
 
   def show
@@ -80,9 +106,9 @@ class Hex
   end
 
   def search_longest_path
-    hex.each_with_index do |line, row|
-      line.each_with_index do |cell , col|
-        notify(row, col)
+    hex.each do |line|
+      line.each do |cell|
+        cell.notify
       end
     end
   end
@@ -94,60 +120,9 @@ class Hex
       end
     end
   end
-
-  private
-
-  def cell row, col
-    if row >= 0 && row < hex.length && col >= 0 && col < hex[row].length
-      hex[row][col]
-    else
-      nil
-    end
-  end
-
-  def neighbor_index base_row, base_col, pos
-    row = base_row
-    col = base_col
-    case pos
-    when :LEFT_ABOVE then
-      row -= 1
-      col -= 1 if base_row <= 3
-    when :RIGHT_AVOVE then
-      row -= 1
-      col += 1 if base_row > 3
-    when :LEFT then
-      col -= 1
-    when :RIGHT then
-      col += 1
-    when :LEFT_BENEATH then
-      row += 1
-      col -= 1 if base_row >= 3
-    when :RIGHT_BENEATH then
-      row += 1
-      col += 1 if base_row < 3
-    end
-    [row, col]
-  end
-
-  def notify row, col
-    base = cell(row, col)
-    @@neighbor_pos.each do |pos|
-      n_row, n_col = neighbor_index(row, col, pos)
-      neighbor = cell(n_row, n_col)
-      if !neighbor.nil?
-        (base > neighbor) && neighbor.update_longest_path(base.longest_path) && notify(n_row, n_col)
-      end
-    end
-  end
 end
 
 input = STDIN.gets.chomp
 hex = Hex.new(input)
-hex.show
-puts
-hex.show_value
-puts
 hex.search_longest_path
-hex.show_longest_path
-puts
 puts hex.longest_path
