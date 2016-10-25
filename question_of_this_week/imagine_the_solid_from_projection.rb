@@ -11,8 +11,10 @@ end
 
 projection = []
 while line = STDIN.gets
-  line.scan(/(\[([10,]*)\])/).each do |match|
-    projection << match[1].split(",")
-  end
+  projection << line.scan(/(\[([10,]*)\])/).map{|m| m[1].split(",")}
 end
 projection.each{|plane| dlog({:plane => plane})}
+
+h, d, w = 3, 3, 3
+solid = Array.new(h){|z| Array.new(d){|y| Array.new(w){|x| 1}}}
+dlog({:solid => solid})
