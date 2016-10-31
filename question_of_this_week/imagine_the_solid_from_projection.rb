@@ -9,6 +9,19 @@ def dlog variables, method = ""
   end
 end
 
+def check_solid solid
+  answer = answer
+  0.upto(solid.length-2) do |z|
+    solid[z].each_with_index do |row, y|
+      row.each_with_index do |block , x|
+        val = solid[z-1][y][x]
+        answer &= block.nil? || block == 1 || (!val.nil? && solid[z-1][y][x] == 1)
+      end
+    end
+  end
+  answer
+end
+
 projection = {}
 [:ABOVE, :SIDE, :FRONT].each do |pos|
   projection[pos] = STDIN.gets.scan(/(\[([10,]*)\])/).map{|m| m[1].split(",").map{|v| v.to_i}}
@@ -35,13 +48,12 @@ solid[h-1].each_with_index do |row, i|
 end
 
 # 側面図から判断して必ず配置される場所を1に
+side_rest = 0
 projection[:SIDE].each_with_index do |plane, i|
   plane.each_with_index do |row, j|
     idx = []
     solid[i][d-1-j].each_with_index{|block, k| idx << k if block.nil? || block.nonzero?}
     if row == 1 && idx.length == 1
-      dlog({:side => "#{i}, #{j}"})
-      dlog({:solid => idx[0]})
       i.upto(h-1) do |l|
         solid[l][d-1-j][idx[0]] = 1
       end
@@ -50,79 +62,68 @@ projection[:SIDE].each_with_index do |plane, i|
 end
 
 # 正面図から判断して必ず配置される場所を1に
+front_rest = 0
 projection[:FRONT].each_with_index do |plane, i|
   plane.each_with_index do |col, j|
     idx = []
     solid[i].map{|row| row[j]}.each_with_index{|block, k| idx << k if block.nil? || block.nonzero?}
     if col == 1 && idx.length == 1
-      dlog({:front => "#{i}, #{j}"})
-      dlog({:solid => idx[0]})
       i.upto(h-1) do |l|
         solid[l][idx[0]][j] = 1
       end
     end
   end
 end
-
 dlog({:solid => solid})
 
-# nilの場所
-idx = []
-solid.each_with_index do |plane, z|
-  plane.each_with_index do |row, y|
-    row.each_with_index do |block, x|
-      idx << [z, y, x] if block.nil?
-    end
+def under_patterns solid, target, selected, z_idx, y_idx
+  under_mask = selected.inject(0){|acc, v| acc += (1 << (2 - v))}
+  selected_target = (0..target.length-1).to_a.map{|v| (selected.include?(v) || target[v] == 1) ? 1 : 0}
+  # dlog({:selected_target => selected_target})
+  patterns = zy_patterns(solid, under_mask, z_idx + 1, y_idx)
+  patterns.each do |pattern|
+    pattern.unshift selected_target
   end
+  patterns
 end
 
-dlog({:idx => idx})
+def zy_patterns solid, above_mask, z_idx, y_idx
+  return [[]] if z_idx == solid.length
+  target = solid[z_idx][y_idx].map.with_index{|v, i| (above_mask[2 - i]) == 1 ? 1 : v}
+  idxes = target.map.with_index{|v, i| i if v.nil?}.select{|v| !v.nil?}
 
-answer = 0
-0.upto(idx.length) do |choices|
-  dlog({:choices => choices})
-  idx.combination(choices).each do |patterns|
-    dlog({:patterns => patterns})
-    patterns.each do |(z, y, x)|
-      solid[z][y][x] = 1
-    end
-    dlog({:solid => solid})
+  under_patterns_all = []
 
-    side = true
-    projection[:SIDE].each_with_index do |plane, i|
-      plane.each_with_index do |row, j|
-        placed = []
-        solid[i][d-1-j].each_with_index{|block, k| placed << k if block == 1}
-        dlog({:row => row, :placed => placed})
-        if (row == 0 && placed.length > 0) || (row == 1 && placed.length == 0)
-          side = false
-        end
-        break if !side
+  if idxes.length > 0
+    less = target.select{|v| v == 1}.length > 0 ? 0 : 1
+    less.upto(idxes.length) do |choices|
+      idxes.combination(choices).each do |blocks|
+        under_patterns_all.concat(under_patterns(solid, target, blocks, z_idx, y_idx))
       end
-      break if !side
     end
-
-    if side
-      front = true
-      projection[:FRONT].each_with_index do |plane, i|
-        plane.each_with_index do |col, j|
-          placed = []
-          solid[i].map{|row| row[j]}.each_with_index{|block, k| placed << k if block == 1}
-          dlog({:col => col, :placed => placed})
-          if (col == 0 && placed.length > 0) || (col == 1 && placed.length == 0)
-            front = false
-          end
-          break if !front
-        end
-        break if !front
-      end
-      answer += 1 if front
-    end
-
-    patterns.each do |(z, y, x)|
-      solid[z][y][x] = 0
-    end
+  else
+    under_patterns_all.concat(under_patterns(solid, target, [], z_idx, y_idx))
   end
+
+  under_patterns_all
 end
 
-puts answer
+# p zy_patterns(solid, 0, 0, 0)
+
+patterns = []
+d.times do |y|
+  patterns << zy_patterns(solid, 0, 0, y)
+end
+
+candidates = [0]
+patterns.each do |pattern|
+  tmp = []
+  pattern.each do |zx|
+    candidates.each do |candidate|
+      tmp << (candidate | zx.join.to_i(2))
+    end
+  end
+  candidates = tmp
+end
+
+puts candidates.count{|v| v == projection[:FRONT].join.to_i(2)}
