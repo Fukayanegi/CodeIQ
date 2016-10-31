@@ -9,19 +9,6 @@ def dlog variables, method = ""
   end
 end
 
-def check_solid solid
-  answer = answer
-  0.upto(solid.length-2) do |z|
-    solid[z].each_with_index do |row, y|
-      row.each_with_index do |block , x|
-        val = solid[z-1][y][x]
-        answer &= block.nil? || block == 1 || (!val.nil? && solid[z-1][y][x] == 1)
-      end
-    end
-  end
-  answer
-end
-
 projection = {}
 [:ABOVE, :SIDE, :FRONT].each do |pos|
   projection[pos] = STDIN.gets.scan(/(\[([10,]*)\])/).map{|m| m[1].split(",").map{|v| v.to_i}}
@@ -48,7 +35,6 @@ solid[h-1].each_with_index do |row, i|
 end
 
 # 側面図から判断して必ず配置される場所を1に
-side_rest = 0
 projection[:SIDE].each_with_index do |plane, i|
   plane.each_with_index do |row, j|
     idx = []
@@ -62,7 +48,6 @@ projection[:SIDE].each_with_index do |plane, i|
 end
 
 # 正面図から判断して必ず配置される場所を1に
-front_rest = 0
 projection[:FRONT].each_with_index do |plane, i|
   plane.each_with_index do |col, j|
     idx = []
@@ -103,8 +88,6 @@ def zy_patterns solid, above_mask, z_idx, y_idx
 
   under_patterns_all
 end
-
-# p zy_patterns(solid, 0, 0, 0)
 
 patterns = []
 d.times do |y|
