@@ -94,15 +94,11 @@ def zy_patterns solid, above_mask, z_idx, y_idx
 
   under_patterns_all = []
 
-  if idxes.length > 0
-    less = target.select{|v| v == 1}.length > 0 ? 0 : 1
-    less.upto(idxes.length) do |choices|
-      idxes.combination(choices).each do |blocks|
-        under_patterns_all.concat(under_patterns(solid, target, blocks, z_idx, y_idx))
-      end
+  less = target.select{|v| v == 1}.length > 0 ? 0 : 1
+  less.upto(idxes.length) do |choices|
+    idxes.combination(choices).each do |blocks|
+      under_patterns_all.concat(under_patterns(solid, target, blocks, z_idx, y_idx))
     end
-  else
-    under_patterns_all.concat(under_patterns(solid, target, [], z_idx, y_idx))
   end
 
   under_patterns_all
