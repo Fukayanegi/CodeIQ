@@ -13,8 +13,6 @@ projection = {}
 [:ABOVE, :SIDE, :FRONT].each do |pos|
   projection[pos] = STDIN.gets.scan(/(\[([10,]*)\])/).map{|m| m[1].split(",").map{|v| v.to_i}}
 end
-# while line = STDIN.gets
-# end
 projection.each{|plane| dlog({:plane => plane})}
 
 # 配置できない場所を0、不定をnil
