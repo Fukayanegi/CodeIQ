@@ -76,9 +76,9 @@ class Board
   end
 end
 
-# コマンドライン引数に"-debug"があった場合にログを出力する関数
+# コマンドライン引数に"-dlog"があった場合にログを出力する関数
 def dlog variables, method = ""
-  if ARGV.include?("-dlog)
+  if ARGV.include?("-dlog")
     tmp = ""
     variables.each do |key, value|
       tmp += "#{key}: #{value}, "
