@@ -78,8 +78,7 @@ end
 
 # コマンドライン引数に"-debug"があった場合にログを出力する関数
 def dlog variables, method = ""
-  # TODO: 何かもっとエレガントな方法で
-  if ARGV[0] == "-debug"
+  if ARGV.include?("-dlog)
     tmp = ""
     variables.each do |key, value|
       tmp += "#{key}: #{value}, "
