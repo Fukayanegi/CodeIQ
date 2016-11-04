@@ -35,7 +35,7 @@ class Solver
 
       i_patterns << i_blocks_num if i_blocks_num.all?{|v| v.odd?}
     end
-    dlog({:i_patterns => i_patterns})
+    # dlog({:i_patterns => i_patterns})
   end
 
   def progress pattern, directions, passed, passed_directions
@@ -43,7 +43,9 @@ class Solver
       turn_count = passed_directions.inject(Hash.new(0)){|acc, (direction, tiles)| acc[direction] = (acc[direction] ||= 0) + 1; acc}
       passed_tiles = passed_directions.inject([]){|acc, (direction, tiles)| acc << tiles; acc}
       has_mirror = 2
+      dlog({:passed_directions => passed_directions})
       dlog({:passed_tiles => passed_tiles})
+      dlog({:passed => passed.map{|c| [c.x, c.y]}})
       if passed_tiles == passed_tiles.reverse
         dlog({:turn_count => turn_count})
         horizonal = turn_count[:RIGHT] - turn_count[:LEFT]
@@ -56,12 +58,17 @@ class Solver
     steps = pattern.shift
     answer = 0
     directions.each do |direction|
-      next_pos = passed[-1] + (Coordinate.new(*DIRECTION[direction]) * steps)
-      passed << next_pos
-      passed_directions << [direction, steps]
-      answer += progress(pattern, DIRECTION.keys - directions, passed, passed_directions)
-      passed_directions.pop
-      passed.pop
+      next_pos = []
+      (1..steps+1).each do |step|
+        next_pos << passed[-1] + (Coordinate.new(*DIRECTION[direction]) * step)
+      end
+      if (passed & next_pos) == []
+        passed.concat(next_pos)
+        passed_directions << [direction, steps]
+        answer += progress(pattern, DIRECTION.keys - directions, passed, passed_directions)
+        passed_directions.pop
+        next_pos.length.times{passed.pop}
+      end
     end
     pattern.unshift steps
     answer
@@ -75,9 +82,12 @@ class Solver
       [:UP, :RIGHT].each do |direction|
         break if pattern.length == 0
         steps = pattern.shift
-        next_pos = i_positions[-1] + (Coordinate.new(*DIRECTION[direction]) * steps)
+        next_pos = []
+        (1..steps+1).each do |step|
+          next_pos << i_positions[-1] + (Coordinate.new(*DIRECTION[direction]) * step)
+        end
         passed_directions << [direction, steps]
-        i_positions << next_pos
+        i_positions.concat(next_pos)
       end
 
       if pattern.length == 0
@@ -92,7 +102,7 @@ class Solver
 end
 
 i_blocks, a_blocks = STDIN.gets.chomp.split(" ").map{|v| v.to_i}
-dlog({:i_blocks => i_blocks, :a_blocks => a_blocks})
+# dlog({:i_blocks => i_blocks, :a_blocks => a_blocks})
 
 solver = Solver.new(i_blocks, a_blocks)
 p solver.solve
