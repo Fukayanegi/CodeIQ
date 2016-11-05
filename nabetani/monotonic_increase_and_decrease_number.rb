@@ -52,7 +52,9 @@ class Solver
     1.upto(max_digit).each do |digit|
       num.concat(yield n, first_border, digit)
     end
-    num.map{|ary| ary.join.to_i(n)}
+    dlog({:num => num})
+    num.map{|ary| ary.map{|v| v > 9 ? ("a".ord + (v % 10)).chr : v.to_s}.join.to_i(n)}
+    # num.map{|ary| ary.join.to_i(n)}
   end
 
   def increase_n_ary_number n, first_border, max_digit
