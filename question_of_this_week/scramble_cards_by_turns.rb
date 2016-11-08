@@ -62,9 +62,9 @@ class Solver
       turns = pattern.length / 2 + 1
       constitution = pattern.inject({}){|acc, v| acc[v] = (acc[v] || 0) + 1; acc}
       first_second = pattern.combination(turns).select{|scramble| scramble.inject(:+) > m / 2}.uniq.map do |scramble|
-        tmp = scramble.inject({}){|acc, v| acc[v] = (acc[v] || 0) + 1; acc}
-        rest = tmp.inject([]) do |acc, (key, value)|
-          (constitution[key] - value).times{acc << key}
+        tmp = scramble.inject(Hash.new(0)){|acc, v| acc[v] = (acc[v] || 0) + 1; acc}
+        rest = constitution.inject([]) do |acc, (key, value)|
+          (value - tmp[key]).times{acc << key}
           acc
         end
         [scramble, rest]
