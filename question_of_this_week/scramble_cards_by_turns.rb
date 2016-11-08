@@ -9,6 +9,25 @@ def dlog variables, method = ""
   end
 end
 
+class Fixnum
+  def factorial
+    return 1 if self < 1
+    (1..self).to_a.inject{|acc, v| acc * v}
+  end
+
+  def combination r = self
+    self.permutation(r) / r.factorial
+  end
+
+  def permutation r = self
+    self.factorial / (self - r).factorial
+  end
+
+  def repeated_combination r = self
+    (self + r -1).combination r
+  end
+end
+
 class Solver
   attr_accessor :m, :n
 
@@ -54,6 +73,19 @@ class Solver
     end
     dlog({:first_seconds => first_seconds})
     
+    # 先手、後手の組み合わせの取り方のパターン数を乗算
+    first_seconds.inject(0) do |acc, (first, second)|
+      dlog({:first => first, :second => second})
+      first_constitution = first.inject({}){|acc, v| acc[v] = (acc[v] || 0) + 1; acc}
+      dlog({:first_constitution => first_constitution})
+      first_patterns = first.length.factorial / first_constitution.inject(1){|acc_f, (key, value)| acc_f * value.permutation}
+
+      second_constitution = second.inject({}){|acc, v| acc[v] = (acc[v] || 0) + 1; acc}
+      dlog({:second_constitution => second_constitution})
+      second_patterns = second.length.factorial / second_constitution.inject(1){|acc_s, (key, value)| acc_s * value.permutation}
+      acc += first_patterns * second_patterns
+      acc
+    end
   end
 end
 
@@ -61,7 +93,4 @@ m, n = STDIN.gets.chomp.split(' ').map(&:to_i)
 dlog({:m => m, :n => n})
 
 solver = Solver.new(m, n)
-solver.solve
-
-
-# 先手、後手の組み合わせの取り方のパターン数を乗算
+puts solver.solve
