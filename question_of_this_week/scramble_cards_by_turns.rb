@@ -33,11 +33,26 @@ class Solver
 
   def solve
     # 奇数個の要素数で合計がmになる数値の組み合わせ
-    pattern = (1..m).step(2).inject([]) do |acc, elements|
+    patterns = (1..m).step(2).inject([]) do |acc, elements|
       acc.concat(create_cards_pattern(m, n, elements))
     end
 
     # 要素数m/2(後手),m/2+1(先手)に分けたときにm/2+1の方が大きくなる組み合わせ
+    first_seconds = patterns.inject([]) do |acc, pattern|
+      dlog({:pattern => pattern})
+      turns = pattern.length / 2 + 1
+      constitution = pattern.inject({}){|acc, v| acc[v] = (acc[v] || 0) + 1; acc}
+      first_second = pattern.combination(turns).select{|scramble| scramble.inject(:+) > m / 2}.uniq.map do |scramble|
+        tmp = scramble.inject({}){|acc, v| acc[v] = (acc[v] || 0) + 1; acc}
+        rest = tmp.inject([]) do |acc, (key, value)|
+          (constitution[key] - value).times{acc << key}
+          acc
+        end
+        [scramble, rest]
+      end
+      acc.concat(first_second)
+    end
+    dlog({:first_seconds => first_seconds})
     
   end
 end
@@ -46,7 +61,7 @@ m, n = STDIN.gets.chomp.split(' ').map(&:to_i)
 dlog({:m => m, :n => n})
 
 solver = Solver.new(m, n)
-p solver.solve
+solver.solve
 
 
 # 先手、後手の組み合わせの取り方のパターン数を乗算
