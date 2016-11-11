@@ -17,6 +17,16 @@ class Fixnum
   end
 end
 
+class Array
+  def histgram
+    self.inject({}) do |acc, value|
+      key = block_given? ? (yield value) : value
+      acc[key] = (acc[key] || 0) + 1
+      acc
+    end
+  end
+end
+
 class Board
   attr_accessor :board, :width, :height
   def initialize width, height
