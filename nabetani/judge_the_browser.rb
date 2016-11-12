@@ -15,7 +15,7 @@ dlog({:user_agent => user_agent})
 answer = case user_agent
 when /Mamella\/5.0 \(.*\) Lizard\/\d{8} Firedog\/\d+.\d+/
   "MFD"
-when /Mamella\/5.0 \(.*\) OrangeKit\/.*\(like Lizard\) Version\/\d+.\d+ Voyage\/[d.]+/
+when /Mamella\/5.0 \(.*\) OrangeKit\/.*\(like Lizard\) Version\/\d+.\d+ Voyage\/[\d.]+/
   "VYG"
 when /Mamella\/4.0 \(compatible; ASIT \d+.\d+; .*\)/, \
   /Mamella\/5.0 \(compatible; ASIT \d+.\d+; .*\)/, \
