@@ -12,8 +12,30 @@ end
 class PrimeJudger
   @@primes = []
   @@limit = 1
+
+  def self.search_binary ary, target
+    index = ary.length / 2
+    delta = index
+
+    while true do 
+      delta = delta / 2
+      delta = 1 if delta == 0
+      return true if target == ary[index]
+      if target < ary[index]
+        index = index - delta
+      else
+        index = index + delta
+      end
+
+      if (target > ary[index - 1] || index == 0) && (index == ary.length || target < ary[index])
+        return false
+      end
+    end
+  end
+
   # 素数配列作成
   def self.make_primes limit
+    dlog({:limit => limit})
     ((@@limit+1)..limit).each do |num|
       is_prime = true
       quotient = limit
@@ -36,8 +58,10 @@ class PrimeJudger
   end
 
   def self.is_prime? number
-    make_primes(@@limit + 1000) if @@limit < number
-    @@primes.include?(number)
+    make_primes(number + 1000) if @@limit < number
+    # TODO:ここを高速化できる
+    # @@primes.include?(number)
+    search_binary(@@primes, number)
   end
 end
 
