@@ -35,7 +35,6 @@ class PrimeJudger
 
   # 素数配列作成
   def self.make_primes limit
-    dlog({:limit => limit})
     ((@@limit+1)..limit).each do |num|
       is_prime = true
       quotient = limit
@@ -58,9 +57,7 @@ class PrimeJudger
   end
 
   def self.is_prime? number
-    make_primes(number + 1000) if @@limit < number
-    # TODO:ここを高速化できる
-    # @@primes.include?(number)
+    make_primes(number + 1000) if (@@limit < number || number <= 1)
     search_binary(@@primes, number)
   end
 end
@@ -68,7 +65,7 @@ end
 class InfinitySequence
   include Enumerable
   def initialize
-    @num = 1
+    @num = 0
   end
 
   def each
@@ -114,3 +111,4 @@ seq.take(10).each do |num|
   answer << num
 end
 puts answer.join(",")
+
