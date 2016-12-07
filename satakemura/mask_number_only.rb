@@ -4,7 +4,7 @@ class Solver
   end
 
   def solve
-    re = /\-?(0\.|[1-9]+\.?)[0-9]*([e|E]?\-?[1-9]+)(?=\D|$)/
+    re = /[\-\+]?(0\.|[1-9]+\.?)[0-9]*([e|E]?\-?[1-9]+)(?=\D|$)/
     target = @text.dup
     
     while md = target.match(re) do
