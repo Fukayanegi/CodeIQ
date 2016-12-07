@@ -22,7 +22,6 @@ class Solver
     while ((c = expression.shift) != nil)
       break if c == ")"
       if c == "("
-        p expression
         num_buf = solve_inner(expression)
       elsif Solver::OPERATORS.values.any?{|v| v == c}
         stack_num << num_buf
