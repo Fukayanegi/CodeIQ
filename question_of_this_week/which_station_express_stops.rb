@@ -48,6 +48,7 @@ class Solver
     c_se = l_n_stations.combination(l_n_super_epresses)
     dlog({:c_se => c_se})
     l_n_stations -= l_n_super_epresses
+    l_n_expresses -= l_n_super_epresses
 
     # 急行だけが停まる駅の組み合わせ
     c_e = l_n_stations.combination(l_n_expresses)
