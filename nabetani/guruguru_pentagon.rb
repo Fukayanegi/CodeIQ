@@ -98,7 +98,7 @@ class Solver
   attr_reader :center
   def initialize center
     @center = center
-    crawler = Crawler.new(1000)
+    crawler = Crawler.new(2000)
     @pentagon = Pentagon.new
     @pentagon.value = crawler
   end
