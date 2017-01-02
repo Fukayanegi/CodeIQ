@@ -77,6 +77,16 @@ class Board
   def blank? row, col
     (board & mask(row, col)) == 0
   end
+
+  def none?
+    none = 2 ** (width + 2) - 1
+    height.times do
+      none = none << (width + 2) | ((1 << (width + 1)) + 1)
+    end
+    none = none << (width + 2) | 2 ** (width + 2) - 1
+
+    board == none
+  end
 end
 
 I = []
@@ -96,22 +106,27 @@ L << [[0, 0], [0, 1], [0, 2], [1, 2]]
 L << [[0, 0], [1, 0], [2, 0], [0, 1]]
 L << [[0, 0], [1, 0], [1, 1], [1, 2]]
 
-TETROMINOS = {:I => I, :O => O, :L => L}
+S = []
+S << [[0, 0], [1, 0], [1, 1], [2, 1]]
+S << [[0, 1], [0, 2], [1, 0], [1, 1]]
+S << [[0, 1], [1, 0], [1, 1], [2, 0]]
+S << [[0, 0], [0, 1], [1, 1], [1, 2]]
 
-# S = []
-# board = Board.new(14, 14)
-# # board.fill([[7, 7], [7, 8], [8, 7], [8, 8], ])
-# S << board
-# S.each{|board| board.show}
+T = []
+T << [[0, 1], [1, 1], [1, 2], [2, 1]]
+T << [[0, 0], [0, 1], [0, 2], [1, 1]]
+T << [[0, 0], [1, 0], [1, 1], [2, 0]]
+T << [[0, 1], [1, 0], [1, 1], [1, 2]]
 
-# input = STDIN.gets
-input = "56 37 36 55 35 46 45 47"
+TETROMINOS = {:I => I, :O => O, :L => L, :S => S, :T => T}
+
+input = STDIN.gets
+# input = "56 37 36 55 35 46 45 47"
 cells = input.chomp.split(" ").map{|pos| [pos[1].to_i, pos[0].to_i]}
 dlog({:cells => cells})
 board = Board.new(10, 10) do |b|
   b.fill(cells)
   b.lock
-  b.show
 end
 
 base_pos = cells.inject([9, 9]) do |acc, cell|
@@ -121,17 +136,35 @@ base_pos = cells.inject([9, 9]) do |acc, cell|
 end
 dlog({:base_pos => base_pos})
 
-TETROMINOS.each do |tetromino, positions|
-  positions.each do |position|
-    other = Board.new(10, 10) do |b|
-      b.fill(position, base_pos)
-      b.show
-    end
-    if board.include?(other)
-      # board.erase(position, base_pos)
-      # board.show
-      # board.clear
-      # board.show
+def put board, base_pos, tetrominos
+  if board.none?
+    return [tetrominos.dup]
+  end
+
+  answer = []
+  TETROMINOS.each do |tetromino, positions|
+    positions.each do |position|
+      other = Board.new(10, 10) do |b|
+        b.fill(position, base_pos)
+      end
+      if board.include?(other)
+        board.erase(position, base_pos)
+        tetrominos << tetromino
+        board_dup = board.dup
+        board_dup.lock
+        base_pos_next = 10.downto(1).inject([9, 9]) do |acc, idx|
+          acc[0] = idx-1 if 1.upto(10).any?{|idx2| !board.blank?(idx, idx2)}
+          acc[1] = idx-1 if 1.upto(10).any?{|idx2| !board.blank?(idx2, idx)}
+          acc
+        end
+        answer.concat(put(board_dup, base_pos_next, tetrominos))
+        tetrominos.pop
+        board.clear
+      end
     end
   end
+  answer
 end
+
+answers = put(board, base_pos, [])
+puts answers.map{|tetrominos| tetrominos.sort.map{|tetromino| tetromino.to_s}.join}.uniq!.sort.join(",")
