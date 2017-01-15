@@ -122,6 +122,8 @@ TETROMINOS = {:I => I, :O => O, :L => L, :S => S, :T => T}
 
 input = STDIN.gets
 # input = "56 37 36 55 35 46 45 47"
+# input = "34 46 36 47 33 44 35 45"
+# input = "70 07 44 34 98 11 00 32"
 cells = input.chomp.split(" ").map{|pos| [pos[1].to_i, pos[0].to_i]}
 dlog({:cells => cells})
 board = Board.new(10, 10) do |b|
@@ -167,4 +169,9 @@ def put board, base_pos, tetrominos
 end
 
 answers = put(board, base_pos, [])
-puts answers.map{|tetrominos| tetrominos.sort.map{|tetromino| tetromino.to_s}.join}.uniq!.sort.join(",")
+dlog({:answers => answers})
+if answers.length > 0
+  puts answers.map{|tetrominos| tetrominos.sort.map{|tetromino| tetromino.to_s}.join}.uniq.sort.join(",")
+else
+  puts "-"
+end
