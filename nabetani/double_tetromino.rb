@@ -113,7 +113,7 @@ S << [[0, 1], [1, 0], [1, 1], [2, 0]]
 S << [[0, 0], [0, 1], [1, 1], [1, 2]]
 
 T = []
-T << [[0, 1], [1, 1], [1, 2], [2, 1]]
+T << [[0, 1], [1, 0], [1, 1], [2, 1]]
 T << [[0, 0], [0, 1], [0, 2], [1, 1]]
 T << [[0, 0], [1, 0], [1, 1], [2, 0]]
 T << [[0, 1], [1, 0], [1, 1], [1, 2]]
@@ -124,12 +124,14 @@ input = STDIN.gets
 # input = "56 37 36 55 35 46 45 47"
 # input = "34 46 36 47 33 44 35 45"
 # input = "70 07 44 34 98 11 00 32"
+input = "67 76 77 78 68 69 58 57"
 cells = input.chomp.split(" ").map{|pos| [pos[1].to_i, pos[0].to_i]}
 dlog({:cells => cells})
 board = Board.new(10, 10) do |b|
   b.fill(cells)
   b.lock
 end
+# board.show
 
 base_pos = cells.inject([9, 9]) do |acc, cell|
   acc[0] = cell[0] if acc[0] > cell[0]
@@ -149,6 +151,7 @@ def put board, base_pos, tetrominos
       other = Board.new(10, 10) do |b|
         b.fill(position, base_pos)
       end
+      # other.show if tetromino == :T
       if board.include?(other)
         board.erase(position, base_pos)
         tetrominos << tetromino
