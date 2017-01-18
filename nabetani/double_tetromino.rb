@@ -89,92 +89,123 @@ class Board
   end
 end
 
-I = []
-I << [[0, 0], [1, 0], [2, 0], [3, 0]]
-I << [[0, 0], [0, 1], [0, 2], [0, 3]]
+class Solver
+  @@tetrominos = nil
+  def self.tetrominos
+    # 初期化するよい方法がわからない
+    # クラス生成時のフックメソッドとかを使えばよいのか？
+    if @@tetrominos == nil
+      i = []
+      i << [[0, 0], [1, 0], [2, 0], [3, 0]]
+      i << [[0, 0], [0, 1], [0, 2], [0, 3]]
 
-O = []
-O << [[0, 0], [0, 1], [1, 0], [1, 1]]
+      o = []
+      o << [[0, 0], [0, 1], [1, 0], [1, 1]]
 
-L =[]
-L << [[0, 0], [1, 0], [2, 0], [2, 1]]
-L << [[1, 0], [1, 1], [1, 2], [0, 2]]
-L << [[0, 0], [0, 1], [1, 1], [2, 1]]
-L << [[0, 0], [0, 1], [0, 2], [1, 0]]
-L << [[2, 0], [0, 1], [1, 1], [2, 1]]
-L << [[0, 0], [0, 1], [0, 2], [1, 2]]
-L << [[0, 0], [1, 0], [2, 0], [0, 1]]
-L << [[0, 0], [1, 0], [1, 1], [1, 2]]
+      l =[]
+      l << [[0, 0], [1, 0], [2, 0], [2, 1]]
+      l << [[0, 0], [0, 1], [0, 2], [-1, 2]]
+      l << [[0, 0], [0, 1], [1, 1], [2, 1]]
+      l << [[0, 0], [0, 1], [0, 2], [1, 0]]
+      l << [[0, 0], [-2, 1], [-1, 1], [0, 1]]
+      l << [[0, 0], [0, 1], [0, 2], [1, 2]]
+      l << [[0, 0], [1, 0], [2, 0], [0, 1]]
+      l << [[0, 0], [1, 0], [1, 1], [1, 2]]
 
-S = []
-S << [[0, 0], [1, 0], [1, 1], [2, 1]]
-S << [[0, 1], [0, 2], [1, 0], [1, 1]]
-S << [[0, 1], [1, 0], [1, 1], [2, 0]]
-S << [[0, 0], [0, 1], [1, 1], [1, 2]]
+      s = []
+      s << [[0, 0], [1, 0], [1, 1], [2, 1]]
+      s << [[0, 0], [0, 1], [1, -1], [1, 0]]
+      s << [[0, 0], [1, -1], [1, 0], [2, -1]]
+      s << [[0, 0], [0, 1], [1, 1], [1, 2]]
 
-T = []
-T << [[0, 1], [1, 0], [1, 1], [2, 1]]
-T << [[0, 0], [0, 1], [0, 2], [1, 1]]
-T << [[0, 0], [1, 0], [1, 1], [2, 0]]
-T << [[0, 1], [1, 0], [1, 1], [1, 2]]
+      t = []
+      t << [[0, 0], [1, -1], [1, 0], [2, 0]]
+      t << [[0, 0], [0, 1], [0, 2], [1, 1]]
+      t << [[0, 0], [1, 0], [1, 1], [2, 0]]
+      t << [[0, 0], [1, -1], [1, 0], [1, 1]]
 
-TETROMINOS = {:I => I, :O => O, :L => L, :S => S, :T => T}
+      @@tetrominos = {:I => i, :O => o, :L => l, :S => s, :T => t}
+    end
+    @@tetrominos
+  end
+
+  def initialize cells
+    @board = Board.new(10, 10) do |b|
+      b.fill(cells)
+      b.lock
+    end
+    # @board.show
+  end
+
+  def base_pos board
+    # board.show
+    answer = []
+    row = (10.downto(1).select{|idx| 1.upto(10).any?{|idx2| !board.blank?(idx, idx2)}}.min || 1) - 1
+    col = (10.downto(1).select{|idx| !board.blank?(row + 1, idx)}.min || 1) - 1
+    # dlog({:row => row, :col => col})
+    answer << [row, col]
+    col = (10.downto(1).select{|idx| 1.upto(10).any?{|idx2| !board.blank?(idx2, idx)}}.min || 1) - 1
+    row = (10.downto(1).select{|idx| !board.blank?(idx, col + 1)}.min || 1) - 1
+    # dlog({:row => row, :col => col})
+    answer << [row, col]
+    answer
+  end
+
+  def put board, base_pos, tetrominos
+    if board.none?
+      return [tetrominos.dup]
+    end
+
+    answer = []
+    Solver.tetrominos.each do |tetromino, positions|
+      positions.each do |position|
+        other = Board.new(10, 10) do |b|
+          b.fill(position, base_pos)
+        end
+        # other.show if tetromino == :T
+        if board.include?(other)
+          board.erase(position, base_pos)
+          tetrominos << tetromino
+          board_dup = board.dup
+          board_dup.lock
+          base_pos(board).each do |base_pos_next|
+            answer.concat(put(board_dup, base_pos_next, tetrominos))
+          end
+          tetrominos.pop
+          board.clear
+        end
+      end
+    end
+    answer
+  end
+
+  def solve
+    answers = []
+    base_pos(@board).each do |base_pos|
+      # dlog({:base_pos => base_pos})
+      answers.concat(put(@board, base_pos, []))
+    end
+    # dlog({:answers => answers})
+
+    if answers.length > 0
+      answers.map{|tetrominos| tetrominos.sort.map{|tetromino| tetromino.to_s}.join}.uniq.sort
+    else
+      ["-"]
+    end
+  end
+end
 
 input = STDIN.gets
 # input = "56 37 36 55 35 46 45 47"
 # input = "34 46 36 47 33 44 35 45"
 # input = "70 07 44 34 98 11 00 32"
-input = "67 76 77 78 68 69 58 57"
+# input = "67 76 77 78 68 69 58 57"
+# input = "20 10 12 21 03 22 13 11"
 cells = input.chomp.split(" ").map{|pos| [pos[1].to_i, pos[0].to_i]}
-dlog({:cells => cells})
-board = Board.new(10, 10) do |b|
-  b.fill(cells)
-  b.lock
-end
-# board.show
+# dlog({:cells => cells})
 
-base_pos = cells.inject([9, 9]) do |acc, cell|
-  acc[0] = cell[0] if acc[0] > cell[0]
-  acc[1] = cell[1] if acc[1] > cell[1]
-  acc
-end
-dlog({:base_pos => base_pos})
 
-def put board, base_pos, tetrominos
-  if board.none?
-    return [tetrominos.dup]
-  end
+solver = Solver.new(cells)
+answer = solver.solve
 
-  answer = []
-  TETROMINOS.each do |tetromino, positions|
-    positions.each do |position|
-      other = Board.new(10, 10) do |b|
-        b.fill(position, base_pos)
-      end
-      # other.show if tetromino == :T
-      if board.include?(other)
-        board.erase(position, base_pos)
-        tetrominos << tetromino
-        board_dup = board.dup
-        board_dup.lock
-        base_pos_next = 10.downto(1).inject([9, 9]) do |acc, idx|
-          acc[0] = idx-1 if 1.upto(10).any?{|idx2| !board.blank?(idx, idx2)}
-          acc[1] = idx-1 if 1.upto(10).any?{|idx2| !board.blank?(idx2, idx)}
-          acc
-        end
-        answer.concat(put(board_dup, base_pos_next, tetrominos))
-        tetrominos.pop
-        board.clear
-      end
-    end
-  end
-  answer
-end
-
-answers = put(board, base_pos, [])
-dlog({:answers => answers})
-if answers.length > 0
-  puts answers.map{|tetrominos| tetrominos.sort.map{|tetromino| tetromino.to_s}.join}.uniq.sort.join(",")
-else
-  puts "-"
-end
+puts answer.join(",")
