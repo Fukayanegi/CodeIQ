@@ -17,7 +17,6 @@ class Solver
       acc[h] = Hash.new(0)
       acc
     end
-
     @board = generate_board(size, height)
     # show_board
   end
@@ -41,6 +40,11 @@ class Solver
 
       (sqrX..sqrX+sqrW-1).each do |x|
         (sqrY..sqrY+sqrH-1).each do |y|
+            # if brdH == 1 && others[x + y * size] != 1
+            #   others.delete(x + y * size);
+            # elsif brdH != 1
+            #   others[x + y * size] = brdH;
+            # end
             others[x + y * size] = brdH;
         end
       end
@@ -64,48 +68,125 @@ class Solver
     memo_l = Array.new(@size * 2 - 1) {0}
     answer = 1
 
-    while pos < @size * 2 - 1
-      # dlog({:pos => pos, :time => Time.now - START}) if pos % 100 == 0
-      adjust = (pos >= @size ? (pos - @size + 1) : 0)
-      loops = pos < @size ? pos + 1 : @size*2 - pos - 1
-      answer_tmp_prev = 0
+    @height.times do |h|
 
-      loops.times do |i|
-        x = i + adjust
-        y = pos - i - adjust
-        height = @board[y * @size + x]
-        # dlog({:i => i, :x => x, :y => y, :height => height})
+      while pos < @size * 2 - 1
+        # dlog({:pos => pos, :time => Time.now - START}) if pos % 100 == 0
+        adjust = (pos >= @size ? (pos - @size + 1) : 0)
+        loops = pos < @size ? pos + 1 : @size*2 - pos - 1
+        answer_tmp_prev = 0
 
-        answer_tmp = 1
-        left = memo_l[i]
-        up = memo_l[i + 1]
-        if @board[y * @size + x - 1] == height && @board[(y - 1) * @size + x] == height && @board[(y - 1) * @size + x - 1] == height
-          # dlog({:memo_lu => memo_lu[i], :memo_l => memo_l, :left => left, :up => up})
-          answer_tmp = answer_tmp + [memo_lu[i], left, up].min
+        loops.times do |i|
+          x = i + adjust
+          y = pos - i - adjust
+          height = @board[y * @size + x]
+          # dlog({:i => i, :x => x, :y => y, :height => height})
+
+          answer_tmp = 1
+          left = memo_l[i]
+          up = memo_l[i + 1]
+          if @board[y * @size + x - 1] == height && @board[(y - 1) * @size + x] == height && @board[(y - 1) * @size + x - 1] == height
+            # dlog({:memo_lu => memo_lu[i], :memo_l => memo_l, :left => left, :up => up})
+            answer_tmp = answer_tmp + [memo_lu[i], left, up].min
+          end
+
+          memo_lu[i] = pos <= @size - 2 ? left : up
+          memo_l[i] = pos <= @size - 2 ? answer_tmp_prev : answer_tmp
+          answer = answer_tmp if answer_tmp > answer
+
+          answer_tmp_prev = answer_tmp if pos <= @size - 2 
         end
 
-        memo_lu[i] = pos <= @size - 2 ? left : up
-        memo_l[i] = pos <= @size - 2 ? answer_tmp_prev : answer_tmp
-        answer = answer_tmp if answer_tmp > answer
+        memo_l[loops] = answer_tmp_prev if pos <= @size - 2
 
-        answer_tmp_prev = answer_tmp if pos <= @size - 2 
+        # dlog({:memo_lu => memo_lu})
+        # dlog({:memo_l => memo_l})
+
+        pos = pos + 1
       end
-
-      memo_l[loops] = answer_tmp_prev if pos <= @size - 2
-
-      # dlog({:memo_lu => memo_lu})
-      # dlog({:memo_l => memo_l})
-
-      pos = pos + 1
     end
+
     answer**2
   end
+
+  def solve2
+    memo = @memo[1]
+    pos = 0
+    answer = 1
+    while pos < @size**2
+      size = @size
+      x = pos % size
+      y = pos / size
+
+      # dlog({:call => "#{pos}, #{pos % size}, #{pos / size}, #{height}", :time => Time.now - START}) if pos % 1000000 == 0
+
+      if !@board.include?(pos)
+        left_length = x == 0 ? 0 : memo[pos - 1]
+        up_length = y == 0 ? 0 : memo[pos - @size]
+        left_up_length = x == 0 || y == 0 ? 0 : memo[pos - 1 - @size]
+        # dlog({:pos => pos, :left_length => left_length, :up_length => up_length, :left_up_length => left_up_length}) if pos == 52814
+
+        min = left_length < up_length ? left_length : up_length
+        min = min < left_up_length ? min : left_up_length
+
+        memo[pos] = 1 + min
+        answer = 1 + min if 1 + min > answer
+      end
+  
+      pos += 1
+      # sleep 1
+    end
+
+    answer**2
+  end
+
+  def solve_inner3 pos, height
+    return 0 if @board[pos] != height
+
+    memo = @memo[height]
+    return memo[pos] if memo.include?(pos)
+
+    size = @size
+    x = pos % size
+    y = pos / size
+
+    left_length = x == 0 ? 0 : solve_inner3(pos - 1, height)
+    up_length = y == 0 ? 0 : solve_inner3(pos - @size, height)
+    left_up_length = x == 0 || y == 0 ? 0 : solve_inner3(pos - 1 - @size, height)
+
+    min = left_length < up_length ? left_length : up_length
+    min = min < left_up_length ? min : left_up_length
+    memo[pos] = 1 + min
+
+    1 + min
+  end
+
+  def solve3
+    pos = 0
+    answer = 1
+    @board.each do |pos, height|
+      memo = @memo[height]
+
+      left_length = solve_inner3(pos - 1, height)
+      up_length = solve_inner3(pos - @size, height)
+      left_up_length = solve_inner3(pos - 1 - @size, height)
+
+      min = left_length < up_length ? left_length : up_length
+      min = min < left_up_length ? min : left_up_length
+
+      memo[pos] = 1 + min
+      answer = 1 + min if 1 + min > answer
+    end
+
+    answer**2
+  end
+end
 
 # inputs = []
 # while line = STDIN.gets
 #   inputs << line.chomp.split(",").map(&:to_i)
 # end
-# inputs = [[8, 5]]
+# inputs = [[13, 5]]
 # inputs = [[8, 5], [10, 4], [13, 5]]
 # answers = [16, 16, 25]
 inputs = [[40,6], [100,5], [500,4], [1000,4], [1000,3], [2000,4], [2000,3], [3000,3]]
@@ -119,5 +200,7 @@ START = Time.now
 inputs.each do |(size, height)|
   solver = Solver.new(size, height)
   puts solver.solve
+  # puts solver.solve2
+  # puts solver.solve3
 end
 puts "#{Time.now - START}"
